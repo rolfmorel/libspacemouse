@@ -49,6 +49,16 @@ int spacemouse_device_grab(struct spacemouse *mouse)
   return ioctl(mouse->fd, EVIOCGRAB, &grab);
 }
 
+int spacemouse_device_ungrab(struct spacemouse *mouse)
+{
+  int grab = 0;
+
+  if (!mouse->fd > -1)
+    return -1;
+
+  return ioctl(mouse->fd, EVIOCGRAB, &grab);
+}
+
 int spacemouse_device_read_event(struct spacemouse *mouse,
                                  spacemouse_event *mouse_event)
 {

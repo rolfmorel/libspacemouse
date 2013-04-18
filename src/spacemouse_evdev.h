@@ -32,6 +32,8 @@ int spacemouse_device_open(struct spacemouse *mouse);
 
 int spacemouse_device_grab(struct spacemouse *mouse);
 
+int spacemouse_device_ungrab(struct spacemouse *mouse);
+
 int spacemouse_device_read_event(struct spacemouse *mouse,
                                  spacemouse_event *event);
 

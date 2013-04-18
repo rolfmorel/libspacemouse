@@ -122,6 +122,8 @@ int spacemouse_device_open(struct spacemouse *mouse);
 
 int spacemouse_device_grab(struct spacemouse *mouse);
 
+int spacemouse_device_ungrab(struct spacemouse *mouse);
+
 /* Wraps evdev's protocol. Reads on *mouse->fd (it blocks on read, use select,
  * poll, etc.). Returns one of SPACEMOUSE_READ_*, IGNORE when receiving an
  * unuseful event, BUFFERING when it buffers events. *event is only valid on
