@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo 'configuring libspacemouse library...'
+echo 'configuring spacemouse library...'
 
 PREFIX=/usr/local
 OPT=yes
@@ -88,5 +88,5 @@ cat "./src/Makefile.in" >>./src/Makefile
 
 #done
 echo ''
-echo 'Done. You can now type make (or gmake) to compile libspacemouse.'
+echo 'Done. You can now type make (or gmake) to compile spacemouse.'
 echo ''
