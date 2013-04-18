@@ -1,0 +1,10 @@
+*.o
+
+libspacemouse.a
+libspacemouse.so*
+
+/Makefile
+/src/Makefile
+
+/examples/list_monitor_open_events
+/examples/simple_list_and_monitor
