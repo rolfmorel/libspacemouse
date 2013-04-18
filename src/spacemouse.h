@@ -17,10 +17,10 @@ You should have received a copy of the GNU General Public License
 along with libspacemouse.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <sys/time.h>
-
 #ifndef _SPACEMOUSE_H_
 #define _SPACEMOUSE_H_
+
+#include <sys/time.h>
 
 enum {
   SPACEMOUSE_EVENT_ANY,
