@@ -1,4 +1,4 @@
-spacemouse library
+libspacemouse
 ==================
 
 A free software driver for 3D/6DoF input devices.
