@@ -64,7 +64,7 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
 {
   struct input_event input_event;
   ssize_t bytes;
-  int ret = SPACEMOUSE_READ_IGNORE;
+  int ret = -1;
   int *int_ptr;
   unsigned int period;
 
