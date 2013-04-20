@@ -16,7 +16,7 @@ $(lib_a): $(obj)
 	$(AR) rcs $@ $(obj)
 
 $(lib_so): $(obj)
-	$(CC) -shared -Wl,-soname,$(soname) -o $@ $(obj) $(LDFLAGS)
+	$(CC) -shared -Wl,-soname,$(soname) -o $@ $(obj) $(LDFLAGS) -ludev
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
