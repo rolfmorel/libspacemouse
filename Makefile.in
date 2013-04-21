@@ -10,6 +10,9 @@ all: $(lib_header) src $(lib_a) $(lib_so)
 src:
 	@$(MAKE) -C src
 
+$(lib_header):
+	cp src/$(lib_header) .
+
 $(lib_a):
 	cp src/$(lib_a) .
 
@@ -35,7 +38,7 @@ uninstall:
 .PHONY: clean
 clean:
 	@$(MAKE) -C src clean
-	rm -f $(lib_a) $(lib_so)
+	rm -f $(lib_a) $(lib_so) $(lib_header)
 
 .PHONY: distclean
 distclean: clean
