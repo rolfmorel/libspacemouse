@@ -20,6 +20,7 @@ along with libspacemouse.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <fcntl.h>
 
 #include <libudev.h>
 
@@ -181,6 +182,8 @@ static void remove_device(struct spacemouse *mouse,
 
 int spacemouse_monitor_open(void)
 {
+  int fd;
+
   if (!udev_monitor) {
     /* add error check */
     if (!udev)
@@ -193,7 +196,11 @@ int spacemouse_monitor_open(void)
     udev_monitor_enable_receiving(udev_monitor);
   }
 
-  return udev_monitor_get_fd(udev_monitor);
+  fd = udev_monitor_get_fd(udev_monitor);
+
+  fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) & ~O_NONBLOCK);
+
+  return fd;
 }
 
 struct spacemouse *spacemouse_monitor(int *action)
