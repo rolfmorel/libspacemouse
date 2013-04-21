@@ -6,7 +6,7 @@ lib_so = $(soname).1
 
 CC = gcc
 AR = ar
-CFLAGS = $(opt) $(debug) -std=c89 -fpic -pedantic -Wall -fno-strict-aliasing $(user_cflags)
+CFLAGS = $(opt) $(debug) -std=c89 -fPIC -pedantic -Wall -fno-strict-aliasing $(user_cflags)
 LDFLAGS = $(user_ldflags)
 
 .PHONY: all
@@ -16,7 +16,7 @@ $(lib_a): $(obj)
 	$(AR) rcs $@ $(obj)
 
 $(lib_so): $(obj)
-	$(CC) -shared -Wl,-soname,$(soname) -o $@ $(obj) $(LDFLAGS) -ludev
+	$(CC) -shared -Wl,-soname,$(soname),-rpath,. -o $@ $(obj) $(LDFLAGS) -L. -ludev
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
