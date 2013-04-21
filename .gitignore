@@ -3,6 +3,8 @@
 libspacemouse.a
 libspacemouse.so*
 
+/libspacemouse.h
+
 /Makefile
 /src/Makefile
 
