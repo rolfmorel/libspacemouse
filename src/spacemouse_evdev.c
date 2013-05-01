@@ -26,6 +26,10 @@ along with libspacemouse.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "spacemouse_evdev.h"
 
+/* Map axis the same way spacenavd/libspnav does by default. */
+static const int map_axis[] = { 0, 2, 1, 3, 5, 4 };
+static const int map_invert[] = { 1, -1, -1, 1, -1, -1 };
+
 int spacemouse_device_open(struct spacemouse *mouse)
 {
   int fd;
@@ -64,7 +68,7 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
 {
   struct input_event input_event;
   ssize_t bytes;
-  int ret = -1;
+  int ret = -1, axis_idx, invert;
   int *int_ptr;
   unsigned int period;
 
@@ -81,16 +85,22 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
   switch (input_event.type) {
     case EV_REL:
       mouse->buf.event.type = SPACEMOUSE_EVENT_MOTION;
+      axis_idx = map_axis[input_event.code - REL_X];
+      invert = map_invert[input_event.code - REL_X];
+
       int_ptr = &(mouse->buf.event.motion.x);
-      int_ptr[input_event.code - REL_X] = input_event.value;
+      int_ptr[axis_idx] = invert * input_event.value;
 
       ret = SPACEMOUSE_READ_BUFFERING;
       break;
 
     case EV_ABS:
       mouse->buf.event.type = SPACEMOUSE_EVENT_MOTION;
+      axis_idx = map_axis[input_event.code - ABS_X];
+      invert = map_invert[input_event.code - ABS_X];
+
       int_ptr = &(mouse->buf.event.motion.x);
-      int_ptr[input_event.code - ABS_X] = input_event.value;
+      int_ptr[axis_idx] = invert * input_event.value;
 
       ret = SPACEMOUSE_READ_BUFFERING;
       break;
