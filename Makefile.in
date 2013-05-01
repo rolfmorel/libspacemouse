@@ -4,19 +4,13 @@ lib_so_link_link = libspacemouse.so
 lib_so_link = $(lib_so_link_link).0
 lib_so = $(lib_so_link).1
 
-all: $(lib_header) src $(lib_a) $(lib_so)
+all: src
 
 .PHONY: src
 src:
 	@$(MAKE) -C src
-
-$(lib_header):
 	cp src/$(lib_header) .
-
-$(lib_a):
 	cp src/$(lib_a) .
-
-$(lib_so):
 	cp src/$(lib_so) .
 
 .PHONY: install
