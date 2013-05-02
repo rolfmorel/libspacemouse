@@ -84,54 +84,55 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
 
   switch (input_event.type) {
     case EV_REL:
-      mouse->buf.event.type = SPACEMOUSE_EVENT_MOTION;
+      mouse->buf.type = SPACEMOUSE_EVENT_MOTION;
       axis_idx = map_axis[input_event.code - REL_X];
       invert = map_invert[input_event.code - REL_X];
 
-      int_ptr = &(mouse->buf.event.motion.x);
+      int_ptr = &(mouse->buf.motion.x);
       int_ptr[axis_idx] = invert * input_event.value;
 
       ret = SPACEMOUSE_READ_BUFFERING;
       break;
 
     case EV_ABS:
-      mouse->buf.event.type = SPACEMOUSE_EVENT_MOTION;
+      mouse->buf.type = SPACEMOUSE_EVENT_MOTION;
       axis_idx = map_axis[input_event.code - ABS_X];
       invert = map_invert[input_event.code - ABS_X];
 
-      int_ptr = &(mouse->buf.event.motion.x);
+      int_ptr = &(mouse->buf.motion.x);
       int_ptr[axis_idx] = invert * input_event.value;
 
       ret = SPACEMOUSE_READ_BUFFERING;
       break;
 
     case EV_KEY:
-      mouse->buf.event.type = SPACEMOUSE_EVENT_BUTTON;
-      mouse->buf.event.button.bnum = input_event.code - BTN_0;
-      mouse->buf.event.button.press = input_event.value;
+      mouse->buf.type = SPACEMOUSE_EVENT_BUTTON;
+      mouse->buf.button.bnum = input_event.code - BTN_0;
+      mouse->buf.button.press = input_event.value;
 
       ret = SPACEMOUSE_READ_BUFFERING;
       break;
 
     case EV_SYN:
-        if (mouse->buf.event.type == 0)
-          break;
-        memcpy(mouse_event, &mouse->buf.event, sizeof *mouse_event);
-        mouse->buf.event.type = 0;
-
-        if (mouse_event->type == SPACEMOUSE_EVENT_MOTION) {
-          if (mouse->buf.time.tv_sec != 0) {
-            period = ((input_event.time.tv_sec * 1000 +
-                       input_event.time.tv_usec / 1000) -
-                      (mouse->buf.time.tv_sec * 1000 +
-                       mouse->buf.time.tv_usec / 1000));
-            mouse_event->motion.period = period;
-          }
-
-          mouse->buf.time = input_event.time;
+      if (mouse->buf.type == SPACEMOUSE_EVENT_MOTION) {
+        memcpy(mouse_event, &mouse->buf.motion, sizeof *mouse_event);
+        if (mouse->buf.time.tv_sec != 0) {
+          period = ((input_event.time.tv_sec * 1000 +
+                     input_event.time.tv_usec / 1000) -
+                    (mouse->buf.time.tv_sec * 1000 +
+                     mouse->buf.time.tv_usec / 1000));
+          mouse_event->motion.period = period;
         }
 
-        ret = SPACEMOUSE_READ_SUCCESS;
+        mouse->buf.time = input_event.time;
+      } else if (mouse->buf.type == SPACEMOUSE_EVENT_BUTTON) {
+        memcpy(mouse_event, &mouse->buf.button, sizeof *mouse_event);
+      } else
+        break;
+
+      mouse->buf.type = 0;
+
+      ret = SPACEMOUSE_READ_SUCCESS;
       break;
 
     default:
