@@ -119,8 +119,10 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
           mouse->buf.time = input_event.time;
         } else if (mouse->buf.type == SPACEMOUSE_EVENT_BUTTON) {
           memcpy(mouse_event, &mouse->buf.button, sizeof *mouse_event);
-        } else
+        } else {
+          ret = SPACEMOUSE_READ_IGNORE;
           break;
+        }
 
         mouse->buf.type = 0;
 
