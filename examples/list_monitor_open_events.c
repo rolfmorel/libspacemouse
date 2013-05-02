@@ -27,7 +27,7 @@ int main()
     printf("  product: %s\n", iter->product);
 
     if (spacemouse_device_open(iter) == -1)
-      printf("Failed to open device: %s\n", iter->devnode);
+      fprintf(stderr, "Failed to open device: %s\n", iter->devnode);
 
     spacemouse_device_set_led(iter, 1);
 
@@ -89,7 +89,7 @@ int main()
         else if (read_event == SPACEMOUSE_READ_SUCCESS) {
           printf("device id %d: ", iter->id);
 
-          if(mouse_event.type == SPACEMOUSE_EVENT_MOTION) {
+          if (mouse_event.type == SPACEMOUSE_EVENT_MOTION) {
             printf("got motion event: t(%d, %d, %d) ",
                    mouse_event.motion.x, mouse_event.motion.y,
                    mouse_event.motion.z);
