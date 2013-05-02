@@ -75,70 +75,69 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
   if (!(mouse->fd > -1))
     return -1;
 
-  do {
-    bytes = read(mouse->fd, &input_event, sizeof input_event);
-  } while (bytes == -1 && errno == EINTR);
+  while (ret == -1) {
 
-  if (bytes < sizeof input_event)
-    return -1;
+    do {
+      bytes = read(mouse->fd, &input_event, sizeof input_event);
+    } while (bytes == -1 && errno == EINTR);
 
-  switch (input_event.type) {
-    case EV_REL:
-      mouse->buf.type = SPACEMOUSE_EVENT_MOTION;
-      axis_idx = map_axis[input_event.code - REL_X];
-      invert = map_invert[input_event.code - REL_X];
+    if (bytes < sizeof input_event || errno == ENODEV)
+      return -1;
 
-      int_ptr = &(mouse->buf.motion.x);
-      int_ptr[axis_idx] = invert * input_event.value;
+    switch (input_event.type) {
+      case EV_REL:
+        mouse->buf.type = SPACEMOUSE_EVENT_MOTION;
+        axis_idx = map_axis[input_event.code - REL_X];
+        invert = map_invert[input_event.code - REL_X];
 
-      ret = SPACEMOUSE_READ_BUFFERING;
-      break;
-
-    case EV_ABS:
-      mouse->buf.type = SPACEMOUSE_EVENT_MOTION;
-      axis_idx = map_axis[input_event.code - ABS_X];
-      invert = map_invert[input_event.code - ABS_X];
-
-      int_ptr = &(mouse->buf.motion.x);
-      int_ptr[axis_idx] = invert * input_event.value;
-
-      ret = SPACEMOUSE_READ_BUFFERING;
-      break;
-
-    case EV_KEY:
-      mouse->buf.type = SPACEMOUSE_EVENT_BUTTON;
-      mouse->buf.button.bnum = input_event.code - BTN_0;
-      mouse->buf.button.press = input_event.value;
-
-      ret = SPACEMOUSE_READ_BUFFERING;
-      break;
-
-    case EV_SYN:
-      if (mouse->buf.type == SPACEMOUSE_EVENT_MOTION) {
-        memcpy(mouse_event, &mouse->buf.motion, sizeof *mouse_event);
-        if (mouse->buf.time.tv_sec != 0) {
-          period = ((input_event.time.tv_sec * 1000 +
-                     input_event.time.tv_usec / 1000) -
-                    (mouse->buf.time.tv_sec * 1000 +
-                     mouse->buf.time.tv_usec / 1000));
-          mouse_event->motion.period = period;
-        }
-
-        mouse->buf.time = input_event.time;
-      } else if (mouse->buf.type == SPACEMOUSE_EVENT_BUTTON) {
-        memcpy(mouse_event, &mouse->buf.button, sizeof *mouse_event);
-      } else
+        int_ptr = &(mouse->buf.motion.x);
+        int_ptr[axis_idx] = invert * input_event.value;
         break;
 
-      mouse->buf.type = 0;
+      case EV_ABS:
+        mouse->buf.type = SPACEMOUSE_EVENT_MOTION;
+        axis_idx = map_axis[input_event.code - ABS_X];
+        invert = map_invert[input_event.code - ABS_X];
 
-      ret = SPACEMOUSE_READ_SUCCESS;
-      break;
+        int_ptr = &(mouse->buf.motion.x);
+        int_ptr[axis_idx] = invert * input_event.value;
+        break;
 
-    default:
+      case EV_KEY:
+        mouse->buf.type = SPACEMOUSE_EVENT_BUTTON;
+        mouse->buf.button.bnum = input_event.code - BTN_0;
+        mouse->buf.button.press = input_event.value;
+        break;
+
+      case EV_SYN:
+        if (mouse->buf.type == SPACEMOUSE_EVENT_MOTION) {
+          memcpy(mouse_event, &mouse->buf.motion, sizeof *mouse_event);
+          if (mouse->buf.time.tv_sec != 0) {
+            period = ((input_event.time.tv_sec * 1000 +
+                       input_event.time.tv_usec / 1000) -
+                      (mouse->buf.time.tv_sec * 1000 +
+                       mouse->buf.time.tv_usec / 1000));
+            mouse_event->motion.period = period;
+          }
+
+          mouse->buf.time = input_event.time;
+        } else if (mouse->buf.type == SPACEMOUSE_EVENT_BUTTON) {
+          memcpy(mouse_event, &mouse->buf.button, sizeof *mouse_event);
+        } else
+          break;
+
+        mouse->buf.type = 0;
+
+        ret = SPACEMOUSE_READ_SUCCESS;
+        break;
+
+      default:
         ret = SPACEMOUSE_READ_IGNORE;
-      break;
+        break;
+    }
+
   }
+
   return ret;
 }
 

@@ -39,8 +39,7 @@ enum {
 
 enum {
   SPACEMOUSE_READ_IGNORE,
-  SPACEMOUSE_READ_SUCCESS,
-  SPACEMOUSE_READ_BUFFERING
+  SPACEMOUSE_READ_SUCCESS
 };
 
 struct spacemouse_event_motion {

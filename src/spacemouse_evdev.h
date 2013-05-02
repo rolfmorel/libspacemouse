@@ -24,8 +24,7 @@ along with libspacemouse.  If not, see <http://www.gnu.org/licenses/>.
 
 enum {
   SPACEMOUSE_READ_IGNORE,
-  SPACEMOUSE_READ_SUCCESS,
-  SPACEMOUSE_READ_BUFFERING
+  SPACEMOUSE_READ_SUCCESS
 };
 
 int spacemouse_device_open(struct spacemouse *mouse);
