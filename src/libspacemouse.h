@@ -115,8 +115,8 @@ struct spacemouse *spacemouse_monitor(int *action);
  */
 void spacemouse_monitor_close(void);
 
-/* Opens the device node in /dev for the device, uses *mouse->devnode.
- * Sets *mouse->fd and returns the new file descriptor or -1 in case of error:
+/* Opens the device node in /dev for the mouse device, uses mouse->devnode.
+ * Sets mouse->fd and returns the new file descriptor or -1 in case of error:
  * not able to open due to permissions, etc.
  */
 int spacemouse_device_open(struct spacemouse *mouse);
@@ -125,25 +125,24 @@ int spacemouse_device_grab(struct spacemouse *mouse);
 
 int spacemouse_device_ungrab(struct spacemouse *mouse);
 
-/* Wraps evdev's protocol. Reads on *mouse->fd (it blocks on read, use select,
- * poll, etc.). Returns one of SPACEMOUSE_READ_*, IGNORE when receiving an
- * unuseful event, BUFFERING when it buffers events. *event is only valid on
- * SUCCESS. Returns -1 on error: file descriptor closed, read error, etc.
+/* Wraps evdev's protocol. Reads on mouse->fd (it blocks on read, use select,
+ * poll, etc.). Returns one of SPACEMOUSE_READ_*. IGNORE when receiving an
+ * unuseful event. event is only valid on SUCCESS. Returns -1 on error: file
+ * descriptor closed, read error, etc.
  */
 int spacemouse_device_read_event(struct spacemouse *mouse,
                                  spacemouse_event *event);
 
-/* Get state of led of *mouse device. One if on, Zero if off, or -1 in case of
+/* Get state of led of mouse device. 1 if on, 0 if off, or -1 in case of
  * error.
  */
 int spacemouse_device_get_led(struct spacemouse *mouse);
 
-/* Set state of led of *mouse device. Return -1 in case of error: device not
- * open or write error.
+/* Set state of led of mouse device. Return -1 in case of error.
  */
 int spacemouse_device_set_led(struct spacemouse *mouse, int state);
 
-/* Close the *mouse->fd. Closes the file descriptor and sets *mouse->fd to -1.
+/* Close the mouse->fd. Closes the file descriptor and sets mouse->fd to -1.
  */
 void spacemouse_device_close(struct spacemouse *mouse);
 
