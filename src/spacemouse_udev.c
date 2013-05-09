@@ -43,11 +43,9 @@ static struct spacemouse *device_in_use(char const *devnode)
 {
   struct spacemouse *iter = spacemouse_head;
 
-  while (iter != NULL) {
+  for ( ; iter; iter = iter->next)
     if (strcmp(iter->devnode, devnode) == 0)
       return iter;
-    iter = iter->next;
-  }
 
   return NULL;
 }
@@ -150,25 +148,14 @@ static void remove_device(struct spacemouse *mouse,
 {
   struct spacemouse *iter = spacemouse_head;
 
-  if (iter == NULL)
-    return;
-
-  if (iter == mouse) {
-    spacemouse_head = mouse->next;
-
-    if (mouse_buf != NULL)
-      memcpy(mouse_buf, mouse, sizeof *mouse_buf);
+  for ( ; iter; iter = iter->next) {
+    if (mouse != iter && mouse != iter->next)
+      continue;
     else {
-      if (mouse->fd > -1) close(mouse->fd);
-      free(mouse->devnode); free(mouse->manufacturer);
-      free(mouse->product); free(mouse);
-    }
-    return;
-  }
-
-  while(iter->next) {
-    if (iter->next == mouse) {
-      iter->next = iter->next->next;
+      if (mouse == iter)
+        spacemouse_head = mouse->next;
+      else
+        iter->next = iter->next->next;
 
       if (mouse_buf != NULL)
         memcpy(mouse_buf, mouse, sizeof *mouse_buf);
