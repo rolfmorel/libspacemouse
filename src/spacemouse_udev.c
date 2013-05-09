@@ -195,7 +195,7 @@ int spacemouse_monitor_open(void)
 struct spacemouse *spacemouse_monitor(int *action)
 {
   static struct spacemouse cache_mouse = { -1, -1, NULL, NULL, NULL };
-  struct spacemouse *mouse = NULL;
+  struct spacemouse *ret_mouse = NULL;
   struct udev_device *dev, *dev_parent;
   char const *devnode, *action_str, *attr_man, *attr_pro;
 
@@ -218,13 +218,13 @@ struct spacemouse *spacemouse_monitor(int *action)
 
     if (devnode != NULL && strstr(devnode, "event") != NULL &&
         dev_parent != NULL) {
-      mouse = device_in_use(devnode);
+      struct spacemouse *mouse = device_in_use(devnode);
 
       action_str = udev_device_get_action(dev);
       if (strcmp(action_str, "add") == 0 &&
           mouse == NULL && attr_pro != NULL &&
           attr_man != NULL && strcmp(attr_man, "3Dconnexion") == 0) {
-        mouse = add_device(devnode, attr_man, attr_pro);
+        ret_mouse = add_device(devnode, attr_man, attr_pro);
 
         *action = SPACEMOUSE_ACTION_ADD;
       } else if (strcmp(action_str, "remove") == 0 && mouse != NULL) {
@@ -235,7 +235,7 @@ struct spacemouse *spacemouse_monitor(int *action)
          * a reference to the cached structure. */
         remove_device(mouse, &cache_mouse);
         cache_mouse.next = NULL;
-        mouse = &cache_mouse;
+        ret_mouse = &cache_mouse;
 
         *action = SPACEMOUSE_ACTION_REMOVE;
       } else if (strcmp(action_str, "change") == 0)
@@ -250,7 +250,7 @@ struct spacemouse *spacemouse_monitor(int *action)
     udev_device_unref(dev);
   }
 
-  return mouse;
+  return ret_mouse;
 }
 
 void spacemouse_monitor_close(void)
