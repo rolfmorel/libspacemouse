@@ -26,12 +26,6 @@ along with libspacemouse.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "spacemouse_udev.h"
 
-static struct spacemouse *add_device(char const *devnode,
-                                     char const *manufacturer,
-                                     char const *product);
-static void remove_device(struct spacemouse *mouse,
-                          struct spacemouse *mouse_buf);
-
 struct spacemouse *spacemouse_head = NULL;
 
 static int new_device_id = 1;
@@ -91,6 +85,32 @@ static struct spacemouse *add_device(char const *devnode,
   return (iter->next = mouse);
 }
 
+static void remove_device(struct spacemouse *mouse,
+                          struct spacemouse *mouse_buf)
+{
+  struct spacemouse *iter = spacemouse_head;
+
+  for ( ; iter; iter = iter->next) {
+    if (mouse != iter && mouse != iter->next)
+      continue;
+    else {
+      if (mouse == iter)
+        spacemouse_head = mouse->next;
+      else
+        iter->next = iter->next->next;
+
+      if (mouse_buf != NULL)
+        memcpy(mouse_buf, mouse, sizeof *mouse_buf);
+      else {
+        if (mouse->fd > -1) close(mouse->fd);
+        free(mouse->devnode); free(mouse->manufacturer);
+        free(mouse->product); free(mouse);
+      }
+      return;
+    }
+  }
+}
+
 struct spacemouse *spacemouse_devices(void)
 {
   return spacemouse_head;
@@ -141,32 +161,6 @@ struct spacemouse *spacemouse_devices_update(void)
   udev_unref(udev);
 
   return spacemouse_head;
-}
-
-static void remove_device(struct spacemouse *mouse,
-                          struct spacemouse *mouse_buf)
-{
-  struct spacemouse *iter = spacemouse_head;
-
-  for ( ; iter; iter = iter->next) {
-    if (mouse != iter && mouse != iter->next)
-      continue;
-    else {
-      if (mouse == iter)
-        spacemouse_head = mouse->next;
-      else
-        iter->next = iter->next->next;
-
-      if (mouse_buf != NULL)
-        memcpy(mouse_buf, mouse, sizeof *mouse_buf);
-      else {
-        if (mouse->fd > -1) close(mouse->fd);
-        free(mouse->devnode); free(mouse->manufacturer);
-        free(mouse->product); free(mouse);
-      }
-      return;
-    }
-  }
 }
 
 int spacemouse_monitor_open(void)
