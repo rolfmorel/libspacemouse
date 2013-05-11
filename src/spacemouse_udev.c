@@ -39,7 +39,7 @@ static int new_device_id = 1;
 static struct udev *udev = NULL;
 static struct udev_monitor *udev_monitor = NULL;
 
-static struct spacemouse *device_in_use(char const *devnode)
+static struct spacemouse *devnode_used_in_list(char const *devnode)
 {
   struct spacemouse *iter = spacemouse_head;
 
@@ -128,7 +128,7 @@ struct spacemouse *spacemouse_devices_update(void)
       attr_pro = udev_device_get_sysattr_value(dev_parent, "product");
       if (attr_man != NULL && strcmp(attr_man, "3Dconnexion") == 0 &&
           attr_pro != NULL) {
-        if (!device_in_use(devnode))
+        if (!devnode_used_in_list(devnode))
             add_device(devnode, attr_man, attr_pro);
       }
     }
@@ -218,7 +218,7 @@ struct spacemouse *spacemouse_monitor(int *action)
 
     if (devnode != NULL && strstr(devnode, "event") != NULL &&
         dev_parent != NULL) {
-      struct spacemouse *mouse = device_in_use(devnode);
+      struct spacemouse *mouse = devnode_used_in_list(devnode);
 
       action_str = udev_device_get_action(dev);
       if (strcmp(action_str, "add") == 0 &&
