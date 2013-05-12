@@ -56,20 +56,17 @@ static struct spacemouse *add_device(char const *devnode,
   mouse->id = new_device_id++;
   mouse->fd = -1;
 
-  if ((mouse->devnode = malloc(strlen(devnode) + 1)) == NULL) {
+  if ((mouse->devnode = strdup(devnode)) == NULL) {
     free(mouse); return NULL;
   }
-  strcpy(mouse->devnode, devnode);
 
-  if ((mouse->manufacturer = malloc(strlen(manufacturer) + 1)) == NULL) {
+  if ((mouse->manufacturer = strdup(manufacturer)) == NULL) {
     free(mouse->devnode); free(mouse); return NULL;
   }
-  strcpy(mouse->manufacturer, manufacturer);
 
-  if ((mouse->product = malloc(strlen(product) + 1)) == NULL) {
+  if ((mouse->product = strdup(product)) == NULL) {
     free(mouse->devnode); free(mouse->manufacturer); free(mouse); return NULL;
   }
-  strcpy(mouse->product, product);
 
   memset(&mouse->buf, 0, sizeof mouse->buf);
   mouse->buf.motion.type = SPACEMOUSE_EVENT_MOTION;
