@@ -89,23 +89,21 @@ static void remove_device(struct spacemouse *mouse,
   struct spacemouse *iter = spacemouse_head;
 
   for ( ; iter; iter = iter->next) {
-    if (mouse != iter && mouse != iter->next)
+    if (spacemouse_head == mouse)
+      spacemouse_head = mouse->next;
+    else if (iter->next == mouse)
+      iter->next = iter->next->next;
+    else
       continue;
-    else {
-      if (mouse == iter)
-        spacemouse_head = mouse->next;
-      else
-        iter->next = iter->next->next;
 
-      if (mouse_buf != NULL)
-        memcpy(mouse_buf, mouse, sizeof *mouse_buf);
-      else {
-        if (mouse->fd > -1) close(mouse->fd);
-        free(mouse->devnode); free(mouse->manufacturer);
-        free(mouse->product); free(mouse);
-      }
-      return;
+    if (mouse_buf != NULL)
+      memcpy(mouse_buf, mouse, sizeof *mouse_buf);
+    else {
+      if (mouse->fd > -1) close(mouse->fd);
+      free(mouse->devnode); free(mouse->manufacturer);
+      free(mouse->product); free(mouse);
     }
+    return;
   }
 }
 
