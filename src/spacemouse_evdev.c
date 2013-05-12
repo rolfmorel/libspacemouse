@@ -65,6 +65,7 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
                                  spacemouse_event *mouse_event)
 {
   struct input_event input_event;
+  struct spacemouse_event_button button_event = { 0, 0, 0 };
   ssize_t bytes;
   int ret = -1, axis_idx, invert = 1;
   int *int_ptr;
@@ -84,7 +85,7 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
 
     switch (input_event.type) {
       case EV_REL:
-        mouse->buf.type = SPACEMOUSE_EVENT_MOTION;
+        mouse->buf.motion.type = SPACEMOUSE_EVENT_MOTION;
 #ifndef MAP_AXIS_SPACENAVD
         axis_idx = input_event.code - REL_X;
 #else
@@ -97,7 +98,7 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
         break;
 
       case EV_ABS:
-        mouse->buf.type = SPACEMOUSE_EVENT_MOTION;
+        mouse->buf.motion.type = SPACEMOUSE_EVENT_MOTION;
 #ifndef MAP_AXIS_SPACENAVD
         axis_idx = input_event.code - ABS_X;
 #else
@@ -110,13 +111,13 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
         break;
 
       case EV_KEY:
-        mouse->buf.type = SPACEMOUSE_EVENT_BUTTON;
-        mouse->buf.button.bnum = input_event.code - BTN_0;
-        mouse->buf.button.press = input_event.value;
+        button_event.type = SPACEMOUSE_EVENT_BUTTON;
+        button_event.bnum = input_event.code - BTN_0;
+        button_event.press = input_event.value;
         break;
 
       case EV_SYN:
-        if (mouse->buf.type == SPACEMOUSE_EVENT_MOTION) {
+        if (mouse->buf.motion.type == SPACEMOUSE_EVENT_MOTION) {
           memcpy(mouse_event, &mouse->buf.motion, sizeof *mouse_event);
           if (mouse->buf.time.tv_sec != 0) {
             period = ((input_event.time.tv_sec * 1000 +
@@ -127,14 +128,14 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
           }
 
           mouse->buf.time = input_event.time;
-        } else if (mouse->buf.type == SPACEMOUSE_EVENT_BUTTON) {
-          memcpy(mouse_event, &mouse->buf.button, sizeof *mouse_event);
+          mouse->buf.motion.type = 0;
+        } else if (button_event.type == SPACEMOUSE_EVENT_BUTTON) {
+          memcpy(mouse_event, &button_event, sizeof *mouse_event);
+          button_event.type = 0;
         } else {
           ret = SPACEMOUSE_READ_IGNORE;
           break;
         }
-
-        mouse->buf.type = 0;
 
         ret = SPACEMOUSE_READ_SUCCESS;
         break;

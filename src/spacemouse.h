@@ -48,9 +48,7 @@ typedef union spacemouse_event {
 } spacemouse_event;
 
 struct spacemouse_buf {
-  int type;
   struct spacemouse_event_motion motion;
-  struct spacemouse_event_button button;
   struct timeval time;
 };
 

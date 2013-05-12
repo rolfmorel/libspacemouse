@@ -72,8 +72,6 @@ static struct spacemouse *add_device(char const *devnode,
   strcpy(mouse->product, product);
 
   memset(&mouse->buf, 0, sizeof mouse->buf);
-  mouse->buf.motion.type = SPACEMOUSE_EVENT_MOTION;
-  mouse->buf.button.type = SPACEMOUSE_EVENT_BUTTON;
 
   mouse->next = NULL;
 
