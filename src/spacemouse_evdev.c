@@ -69,7 +69,6 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
   ssize_t bytes;
   int ret = -1, axis_idx, invert = 1;
   int *int_ptr;
-  unsigned int period;
 
   if (!(mouse->fd > -1))
     return -1;
@@ -119,13 +118,11 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
       case EV_SYN:
         if (mouse->buf.motion.type == SPACEMOUSE_EVENT_MOTION) {
           memcpy(mouse_event, &mouse->buf.motion, sizeof *mouse_event);
-          if (mouse->buf.time.tv_sec != 0) {
-            period = ((input_event.time.tv_sec * 1000 +
-                       input_event.time.tv_usec / 1000) -
-                      (mouse->buf.time.tv_sec * 1000 +
-                       mouse->buf.time.tv_usec / 1000));
-            mouse_event->motion.period = period;
-          }
+          if (mouse->buf.time.tv_sec != 0)
+            mouse_event->motion.period = ((input_event.time.tv_sec * 1000 +
+                                           input_event.time.tv_usec / 1000) -
+                                          (mouse->buf.time.tv_sec * 1000 +
+                                           mouse->buf.time.tv_usec / 1000));
 
           mouse->buf.time = input_event.time;
           mouse->buf.motion.type = 0;
