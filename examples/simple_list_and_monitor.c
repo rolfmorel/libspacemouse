@@ -5,59 +5,49 @@
 
 int main()
 {
-  struct spacemouse *iter, *mon_mouse;
-  int monitor_fd;
-  fd_set fds;
+  struct spacemouse *head, *iter, *mon_mouse;
   int action;
 
-  monitor_fd = spacemouse_monitor_open();
+  spacemouse_monitor_open();
 
-  iter = spacemouse_devices_update();
+  head = spacemouse_device_list_update();
 
-  if (iter == NULL)
+  if (head == NULL)
     printf("No devices found.\n");
 
-  while (iter) {
-    printf("device id: %d\n", iter->id);
-    printf("  devnode: %s\n", iter->devnode);
-    printf("  manufacturer: %s\n", iter->manufacturer);
-    printf("  product: %s\n", iter->product);
-
-    iter = iter->next;
+  spacemouse_device_list_foreach(iter, head) {
+    printf("device id: %d\n", spacemouse_device_get_id(iter));
+    printf("  devnode: %s\n", spacemouse_device_get_devnode(iter));
+    printf("  manufacturer: %s\n", spacemouse_device_get_manufacturer(iter));
+    printf("  product: %s\n", spacemouse_device_get_product(iter));
   }
 
   printf("Entering monitor loop.\n");
   while(1) {
-    FD_ZERO(&fds);
-    FD_SET(monitor_fd, &fds);
-
-    if (select(monitor_fd + 1, &fds, NULL, NULL, NULL) == -1) {
-      perror("select");
-      break;
-    }
-
     mon_mouse = spacemouse_monitor(&action);
 
     if (action == -1)
       break;
     else if (action == SPACEMOUSE_ACTION_ADD) {
-      printf("Device added, device id: %d\n", mon_mouse->id);
-
-      printf("  devnode: %s\n", mon_mouse->devnode);
-      printf("  manufacturer: %s\n", mon_mouse->manufacturer);
-      printf("  product: %s\n", mon_mouse->product);
+      printf("Device added, ");
 
       spacemouse_device_open(mon_mouse);
 
       spacemouse_device_set_led(mon_mouse, 1);
     } else if (action == SPACEMOUSE_ACTION_REMOVE) {
-      printf("Device removed, device id: %d\n", mon_mouse->id);
-
-      printf("  devnode: %s\n", mon_mouse->devnode);
-      printf("  manufacturer: %s\n", mon_mouse->manufacturer);
-      printf("  product: %s\n", mon_mouse->product);
+      printf("Device removed, ");
 
       spacemouse_device_close(mon_mouse);
+    }
+
+    if (action == SPACEMOUSE_ACTION_ADD ||
+        action == SPACEMOUSE_ACTION_REMOVE) {
+      printf("device id: %d\n", spacemouse_device_get_id(mon_mouse));
+
+      printf("  devnode: %s\n", spacemouse_device_get_devnode(mon_mouse));
+      printf("  manufacturer: %s\n",
+             spacemouse_device_get_manufacturer(mon_mouse));
+      printf("  product: %s\n", spacemouse_device_get_product(mon_mouse));
     }
   }
 

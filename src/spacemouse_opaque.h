@@ -17,28 +17,22 @@ You should have received a copy of the GNU General Public License
 along with libspacemouse.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _SPACEMOUSE_UDEV_H_
-#define _SPACEMOUSE_UDEV_H_
+#ifndef _SPACEMOUSE_OPAQUE_H_
+#define _SPACEMOUSE_OPAQUE_H_
 
 #include "spacemouse.h"
 
-enum {
-  SPACEMOUSE_ACTION_IGNORE,
-  SPACEMOUSE_ACTION_ADD,
-  SPACEMOUSE_ACTION_REMOVE,
-  SPACEMOUSE_ACTION_CHANGE,
-  SPACEMOUSE_ACTION_ONLINE,
-  SPACEMOUSE_ACTION_OFFLINE
-};
+struct spacemouse *spacemouse_device_list_get_next(struct spacemouse *mouse);
 
-struct spacemouse *spacemouse_device_list(void);
+int spacemouse_device_get_id(struct spacemouse *mouse);
 
-struct spacemouse *spacemouse_device_list_update(void);
+int spacemouse_device_get_fd(struct spacemouse *mouse);
 
-int spacemouse_monitor_open(void);
+char const * const spacemouse_device_get_devnode(struct spacemouse *mouse);
 
-struct spacemouse *spacemouse_monitor(int *action);
+char const * const spacemouse_device_get_manufacturer(
+    struct spacemouse *mouse);
 
-void spacemouse_monitor_close(void);
+char const * const spacemouse_device_get_product(struct spacemouse *mouse);
 
 #endif

@@ -61,39 +61,29 @@ typedef union spacemouse_event {
   struct spacemouse_event_button button;
 } spacemouse_event;
 
-struct spacemouse_buf {
-  struct spacemouse_event_motion motion;
-  struct timeval time;
-};
-
-struct spacemouse {
-  int id;
-  int fd;
-
-  char *devnode;
-
-  char *manufacturer;
-  char *product;
-
-  struct spacemouse_buf buf;
-
-  struct spacemouse *next;
-};
+struct spacemouse;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* Returns the head of the internal spacemouse list, use
- * spacemouse_devices_update() first to get current devices.
+ * spacemouse_device_list_update() first to get current devices.
  */
-struct spacemouse *spacemouse_devices(void);
+struct spacemouse *spacemouse_device_list(void);
 
 /* Uses udev to discover devices and update the internal spacemouse list. When
  * the moniter functions are used this should only be needed to collect an
  * initial list. Returns head of internal spacemouse_list.
  */
-struct spacemouse *spacemouse_devices_update(void);
+struct spacemouse *spacemouse_device_list_update(void);
+
+struct spacemouse *spacemouse_device_list_get_next(struct spacemouse *mouse);
+
+#define spacemouse_device_list_foreach(list_iter, list_head) \
+  for (list_iter = list_head; \
+       list_iter != NULL; \
+       list_iter = spacemouse_device_list_get_next(list_iter))
 
 /* Opens an udev connection and adds filter to input devices.
  * Returns file descriptor.
@@ -130,6 +120,17 @@ int spacemouse_device_ungrab(struct spacemouse *mouse);
  */
 int spacemouse_device_read_event(struct spacemouse *mouse,
                                  spacemouse_event *event);
+
+int spacemouse_device_get_id(struct spacemouse *mouse);
+
+int spacemouse_device_get_fd(struct spacemouse *mouse);
+
+char const * const spacemouse_device_get_devnode(struct spacemouse *mouse);
+
+char const * const spacemouse_device_get_manufacturer(
+    struct spacemouse *mouse);
+
+char const * const spacemouse_device_get_product(struct spacemouse *mouse);
 
 /* Get state of led of mouse device. 1 if on, 0 if off, or -1 in case of
  * error.

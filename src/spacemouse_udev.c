@@ -107,14 +107,14 @@ static void remove_device(struct spacemouse *mouse,
   }
 }
 
-struct spacemouse *spacemouse_devices(void)
+struct spacemouse *spacemouse_device_list(void)
 {
   return spacemouse_head;
 }
 
 /* TODO: this function only adds new devices and doesn't remove devices udev
  * no longer lists */
-struct spacemouse *spacemouse_devices_update(void)
+struct spacemouse *spacemouse_device_list_update(void)
 {
   struct udev *udev;
   struct udev_enumerate *enumerate;
