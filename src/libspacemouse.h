@@ -78,6 +78,9 @@ struct spacemouse *spacemouse_device_list(void);
  */
 struct spacemouse *spacemouse_device_list_update(void);
 
+/* Returns next node in the spacemouse list, this is needed to cycle over all
+ * connected devices. Returns NULL when there are no more new nodes.
+ */
 struct spacemouse *spacemouse_device_list_get_next(struct spacemouse *mouse);
 
 #define spacemouse_device_list_foreach(list_iter, list_head) \
@@ -121,15 +124,32 @@ int spacemouse_device_ungrab(struct spacemouse *mouse);
 int spacemouse_device_read_event(struct spacemouse *mouse,
                                  spacemouse_event *event);
 
+/* Returns unique id for mouse device. The id that a device gets assigned is an
+ * incremented number relative to previously assigned devices.
+ * Ids start at integer value 1.
+ */
 int spacemouse_device_get_id(struct spacemouse *mouse);
 
+/* Returns file descriptor that was opened by spacemouse_device_open().
+ * Unopened/closed devices have their the file descriptor set to -1.
+ */
 int spacemouse_device_get_fd(struct spacemouse *mouse);
 
+/* Returns character string which is the path to the associated node in /dev.
+ * This string is only valid as long as the device is still connected.
+ */
 char const * const spacemouse_device_get_devnode(struct spacemouse *mouse);
 
+/* Returns character string which is the manufacturer string associated with
+ * the device. This string is only valid as long as the device is still
+ * connected.
+ */
 char const * const spacemouse_device_get_manufacturer(
     struct spacemouse *mouse);
 
+/* Returns character string which is the product string associated with the
+ * device. This string is only valid as long as the device is still connected.
+ */
 char const * const spacemouse_device_get_product(struct spacemouse *mouse);
 
 /* Get state of led of mouse device. 1 if on, 0 if off, or -1 in case of
