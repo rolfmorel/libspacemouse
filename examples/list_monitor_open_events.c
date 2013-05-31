@@ -7,7 +7,7 @@
 
 int main()
 {
-  struct spacemouse *head, *iter, *mon_mouse;
+  struct spacemouse *iter, *mon_mouse;
   spacemouse_event mouse_event;
   fd_set fds;
   int mouse_fd, monitor_fd, max_fd;
@@ -15,12 +15,10 @@ int main()
 
   monitor_fd = spacemouse_monitor_open();
 
-  head = spacemouse_device_list_update();
-
-  if (head == NULL)
+  if (spacemouse_device_list_update() == NULL)
     printf("No devices found.\n");
 
-  spacemouse_device_list_foreach(iter, head) {
+  spacemouse_device_list_foreach(iter, spacemouse_device_list()) {
     printf("device id: %d\n", spacemouse_device_get_id(iter));
     printf("  devnode: %s\n", spacemouse_device_get_devnode(iter));
     printf("  manufacturer: %s\n", spacemouse_device_get_manufacturer(iter));
@@ -33,14 +31,12 @@ int main()
     spacemouse_device_set_led(iter, 1);
   }
 
-  printf("Entering monitor loop.\n");
   while(1) {
     FD_ZERO(&fds);
     FD_SET(monitor_fd, &fds);
     max_fd = monitor_fd;
 
-    head = spacemouse_device_list();
-    spacemouse_device_list_foreach(iter, head)
+    spacemouse_device_list_foreach(iter, spacemouse_device_list())
       if ((mouse_fd = spacemouse_device_get_fd(iter)) > -1) {
         FD_SET(mouse_fd, &fds);
         if (mouse_fd > max_fd) max_fd = mouse_fd;
@@ -69,7 +65,6 @@ int main()
       if (action == SPACEMOUSE_ACTION_ADD ||
           action == SPACEMOUSE_ACTION_REMOVE) {
         printf("device id: %d\n", spacemouse_device_get_id(mon_mouse));
-
         printf("  devnode: %s\n", spacemouse_device_get_devnode(mon_mouse));
         printf("  manufacturer: %s\n",
                spacemouse_device_get_manufacturer(mon_mouse));
