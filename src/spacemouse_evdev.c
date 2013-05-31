@@ -47,7 +47,7 @@ int spacemouse_device_open(struct spacemouse *mouse)
 
 int spacemouse_device_grab(struct spacemouse *mouse)
 {
-  if (!mouse->fd > -1)
+  if (!(mouse->fd > -1))
     return -1;
 
   return ioctl(mouse->fd, EVIOCGRAB, (void*)1);
@@ -55,7 +55,7 @@ int spacemouse_device_grab(struct spacemouse *mouse)
 
 int spacemouse_device_ungrab(struct spacemouse *mouse)
 {
-  if (!mouse->fd > -1)
+  if (!(mouse->fd > -1))
     return -1;
 
   return ioctl(mouse->fd, EVIOCGRAB, (void*)0);
