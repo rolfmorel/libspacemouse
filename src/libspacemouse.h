@@ -73,7 +73,7 @@ extern "C" {
 struct spacemouse *spacemouse_device_list(void);
 
 /* Uses udev to discover devices and update the internal spacemouse list. When
- * the moniter functions are used this should only be needed to collect an
+ * the monitor functions are used this should only be needed to collect an
  * initial list. Returns head of internal spacemouse_list.
  */
 struct spacemouse *spacemouse_device_list_update(void);
@@ -93,7 +93,7 @@ struct spacemouse *spacemouse_device_list_get_next(struct spacemouse *mouse);
  */
 int spacemouse_monitor_open(void);
 
-/* Wraps udev's moniter connection. action will be one of SPACEMOUSE_ACTION_*,
+/* Wraps udev's monitor connection. action will be one of SPACEMOUSE_ACTION_*,
  * or -1 in case of error. If action is ADD returned pointer is the new device
  * in the spacemouse list. If action is REMOVE returned pointer is to the
  * cached spacemouse structure which was removed from the spacemouse list. The
@@ -102,7 +102,7 @@ int spacemouse_monitor_open(void);
  */
 struct spacemouse *spacemouse_monitor(int *action);
 
-/* Closes the udev moniter connection.
+/* Closes the udev monitor connection.
  */
 void spacemouse_monitor_close(void);
 
