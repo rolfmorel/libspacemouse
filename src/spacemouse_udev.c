@@ -83,8 +83,7 @@ static struct spacemouse *add_device(char const *devnode,
   return (iter->next = mouse);
 }
 
-static void remove_device(struct spacemouse *mouse,
-                          struct spacemouse *mouse_buf)
+static void remove_device(struct spacemouse *mouse, int list_only)
 {
   struct spacemouse *iter = spacemouse_head;
 
@@ -96,9 +95,7 @@ static void remove_device(struct spacemouse *mouse,
     else
       continue;
 
-    if (mouse_buf != NULL)
-      memcpy(mouse_buf, mouse, sizeof *mouse_buf);
-    else {
+    if (list_only != 1) {
       if (mouse->fd > -1) close(mouse->fd);
       free(mouse->devnode); free(mouse->manufacturer);
       free(mouse->product); free(mouse);
@@ -184,7 +181,7 @@ int spacemouse_monitor_open(void)
 
 struct spacemouse *spacemouse_monitor(int *action)
 {
-  static struct spacemouse cache_mouse = { -1, -1, NULL, NULL, NULL };
+  static struct spacemouse *cache_mouse = NULL;
   struct spacemouse *ret_mouse = NULL;
   struct udev_device *dev, *dev_parent;
   char const *devnode, *action_str, *attr_man, *attr_pro;
@@ -218,14 +215,17 @@ struct spacemouse *spacemouse_monitor(int *action)
 
         *action = SPACEMOUSE_ACTION_ADD;
       } else if (strcmp(action_str, "remove") == 0 && mouse != NULL) {
-        free(cache_mouse.devnode); free(cache_mouse.manufacturer);
-        free(cache_mouse.product);
+        if (cache_mouse != NULL) {
+          if (cache_mouse->fd > -1) close(cache_mouse->fd);
+          free(cache_mouse->devnode); free(cache_mouse->manufacturer);
+          free(cache_mouse->product); free(cache_mouse);
+        }
 
-        /* Cache the spacemouse structure about to be removed so we can return
-         * a reference to the cached structure. */
-        remove_device(mouse, &cache_mouse);
-        cache_mouse.next = NULL;
-        ret_mouse = &cache_mouse;
+        remove_device(mouse, 1);
+        cache_mouse = mouse;
+        cache_mouse->next = NULL;
+
+        ret_mouse = cache_mouse;
 
         *action = SPACEMOUSE_ACTION_REMOVE;
       } else if (strcmp(action_str, "change") == 0)
