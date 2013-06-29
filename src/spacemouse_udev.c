@@ -228,12 +228,7 @@ struct spacemouse *spacemouse_monitor(int *action)
         ret_mouse = cache_mouse;
 
         *action = SPACEMOUSE_ACTION_REMOVE;
-      } else if (strcmp(action_str, "change") == 0)
-        *action = SPACEMOUSE_ACTION_CHANGE;
-      else if (strcmp(action_str, "online") == 0)
-        *action = SPACEMOUSE_ACTION_ONLINE;
-      else if (strcmp(action_str, "offline") == 0)
-        *action = SPACEMOUSE_ACTION_OFFLINE;
+      }
     }
 
     /* dev_parent is unreferenced/cleaned with child device */

@@ -25,10 +25,7 @@ along with libspacemouse.  If not, see <http://www.gnu.org/licenses/>.
 enum {
   SPACEMOUSE_ACTION_IGNORE,
   SPACEMOUSE_ACTION_ADD,
-  SPACEMOUSE_ACTION_REMOVE,
-  SPACEMOUSE_ACTION_CHANGE,
-  SPACEMOUSE_ACTION_ONLINE,
-  SPACEMOUSE_ACTION_OFFLINE
+  SPACEMOUSE_ACTION_REMOVE
 };
 
 struct spacemouse *spacemouse_device_list(void);
