@@ -66,6 +66,4 @@ struct spacemouse {
   struct spacemouse *next;
 };
 
-extern struct spacemouse *spacemouse_head;
-
 #endif

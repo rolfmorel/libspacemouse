@@ -26,7 +26,7 @@ along with libspacemouse.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "spacemouse_udev.h"
 
-struct spacemouse *spacemouse_head = NULL;
+static struct spacemouse *spacemouse_head = NULL;
 
 static int new_device_id = 1;
 
