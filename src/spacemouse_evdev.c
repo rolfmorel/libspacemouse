@@ -21,6 +21,7 @@ along with libspacemouse.  If not, see <http://www.gnu.org/licenses/>.
 #include <unistd.h>
 #include <string.h>
 #include <fcntl.h>
+#include <errno.h>
 #include <sys/ioctl.h>
 #include <linux/input.h>
 
@@ -47,16 +48,20 @@ int spacemouse_device_open(struct spacemouse *mouse)
 
 int spacemouse_device_grab(struct spacemouse *mouse)
 {
-  if (!(mouse->fd > -1))
+  if (!(mouse->fd > -1)) {
+    errno = EBADF;
     return -1;
+  }
 
   return ioctl(mouse->fd, EVIOCGRAB, (void*)1);
 }
 
 int spacemouse_device_ungrab(struct spacemouse *mouse)
 {
-  if (!(mouse->fd > -1))
+  if (!(mouse->fd > -1)) {
+    errno = EBADF;
     return -1;
+  }
 
   return ioctl(mouse->fd, EVIOCGRAB, (void*)0);
 }
@@ -70,8 +75,10 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
   int ret = -1, axis_idx, invert = 1;
   int *int_ptr;
 
-  if (!(mouse->fd > -1))
+  if (!(mouse->fd > -1)) {
+    errno = EBADF;
     return -1;
+  }
 
   while (ret == -1) {
 
@@ -151,8 +158,10 @@ int spacemouse_device_get_led(struct spacemouse *mouse)
 {
   unsigned char state[(LED_MAX / 8) + 1];
 
-  if (!(mouse->fd > -1))
+  if (!(mouse->fd > -1)) {
+    errno = EBADF;
     return -1;
+  }
 
   memset(state, 0, sizeof state);
 
@@ -166,8 +175,10 @@ int spacemouse_device_set_led(struct spacemouse *mouse, int state)
 {
   struct input_event input_event;
 
-  if (!(mouse->fd > -1))
+  if (!(mouse->fd > -1)) {
+    errno = EBADF;
     return -1;
+  }
 
   memset(&input_event, 0, sizeof input_event);
   input_event.type = EV_LED;
@@ -183,8 +194,10 @@ int spacemouse_device_set_led(struct spacemouse *mouse, int state)
 
 void spacemouse_device_close(struct spacemouse *mouse)
 {
-  if (!(mouse->fd > -1))
+  if (!(mouse->fd > -1)) {
+    errno = EBADF;
     return;
+  }
 
   close(mouse->fd);
 
