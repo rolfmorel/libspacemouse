@@ -9,12 +9,10 @@ all: src
 .PHONY: src
 src:
 	@$(MAKE) -C src
-	cp src/$(lib_header) .
-	cp src/$(lib_a) .
-	cp src/$(lib_so) .
+	cp src/$(lib_header) cp src/$(lib_a) cp src/$(lib_so) $(CURDIR)
 
 .PHONY: install
-install: $(lib_header) src $(lib_a) $(lib_so)
+install: $(lib_header) $(lib_a) $(lib_so)
 	install -D -m 644 $(lib_header) $(DESTDIR)$(PREFIX)/include/$(lib_header)
 	install -D -m 644 $(lib_a) $(DESTDIR)$(PREFIX)/lib/$(lib_a)
 	install -D -m 755 $(lib_so) $(DESTDIR)$(PREFIX)/lib/$(lib_so)
@@ -37,8 +35,8 @@ clean:
 .PHONY: distclean
 distclean: clean
 	@$(MAKE) -C examples clean
-	rm -f ./src/Makefile Makefile
+	rm -f src/Makefile Makefile
 
 .PHONY: examples
-examples: $(lib_header) src $(lib_a) $(lib_so)
+examples: $(lib_header) $(lib_a) $(lib_so)
 	@$(MAKE) -C examples
