@@ -20,8 +20,6 @@ along with libspacemouse.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef _LIBSPACEMOUSE_H_
 #define _LIBSPACEMOUSE_H_
 
-#include <sys/time.h>
-
 enum {
   SPACEMOUSE_EVENT_ANY,
   SPACEMOUSE_EVENT_MOTION,
