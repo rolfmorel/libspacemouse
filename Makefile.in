@@ -9,7 +9,7 @@ all: src
 .PHONY: src
 src:
 	@$(MAKE) -C src
-	cp src/$(lib_header) cp src/$(lib_a) cp src/$(lib_so) $(CURDIR)
+	cp src/$(lib_header) src/$(lib_a) src/$(lib_so) $(CURDIR)
 
 .PHONY: install
 install: $(lib_header) $(lib_a) $(lib_so)
