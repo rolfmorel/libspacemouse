@@ -63,13 +63,13 @@ extern "C" {
 #endif
 
 /* Returns the head of the internal spacemouse list, use
- * spacemouse_device_list_update() first to get current devices.
+ * spacemouse_device_list_update() at least once to initialize list.
  */
 struct spacemouse *spacemouse_device_list(void);
 
-/* Uses udev to discover devices and update the internal spacemouse list. When
+/* Discover devices and initialize/update the internal spacemouse list. When
  * the monitor functions are used this should only be needed to collect an
- * initial list. Returns head of internal spacemouse_list.
+ * initial list. Returns head of internal spacemouse list.
  */
 struct spacemouse *spacemouse_device_list_update(void);
 
@@ -83,27 +83,26 @@ struct spacemouse *spacemouse_device_list_get_next(struct spacemouse *mouse);
        list_iter != NULL; \
        list_iter = spacemouse_device_list_get_next(list_iter))
 
-/* Opens an udev connection and adds filter to input devices.
- * Returns file descriptor.
+/* Opens a connection to system device manager (udev with filter to input
+ * devices on Linux). Returns file descriptor.
  */
 int spacemouse_monitor_open(void);
 
-/* Wraps udev's monitor connection. action will be one of SPACEMOUSE_ACTION_*,
- * or -1 in case of error. If action is ADD returned pointer is the new device
- * in the spacemouse list. If action is REMOVE returned pointer is to the
- * cached spacemouse structure which was removed from the spacemouse list. The
- * cached spacemouse structure can be used for comparison, and is only valid
+/* Wraps system device manager connection. action will be one of
+ * SPACEMOUSE_ACTION_*, or -1 in case of error. If action is ADD returned
+ * pointer is the new device in the spacemouse list. If action is REMOVE
+ * returned pointer is to the cached spacemouse structure which was removed
+ * from the spacemouse list. The cached spacemouse structure is only valid
  * until the next device removal. Blocks on read, use select, poll, etc.
  */
 struct spacemouse *spacemouse_monitor(int *action);
 
-/* Closes the udev monitor connection.
+/* Closes the system device manager connection.
  */
 void spacemouse_monitor_close(void);
 
-/* Opens the device node in /dev for the mouse device, uses mouse->devnode.
- * Sets mouse->fd and returns the new file descriptor or -1 in case of error:
- * not able to open due to permissions, etc.
+/* Opens the device node in /dev for the mouse device.
+ * Sets mouse's file descriptor and returns it or -1 in case of error.
  */
 int spacemouse_device_open(struct spacemouse *mouse);
 
@@ -111,16 +110,16 @@ int spacemouse_device_grab(struct spacemouse *mouse);
 
 int spacemouse_device_ungrab(struct spacemouse *mouse);
 
-/* Wraps evdev's protocol. Reads on mouse->fd (it blocks on read, use select,
- * poll, etc.). Returns one of SPACEMOUSE_READ_*. IGNORE when receiving an
- * unuseful event. event is only valid on SUCCESS. Returns -1 on error: file
- * descriptor closed, read error, etc.
+/* Wraps system HID protocol (evdev on Linux). Reads on mouse's file
+ * descriptor (it blocks on read, use select, poll, etc.). Returns one of
+ * SPACEMOUSE_READ_*. IGNORE when receiving an unuseful event. event is only
+ * valid on SUCCESS. Returns -1 on error.
  */
 int spacemouse_device_read_event(struct spacemouse *mouse,
                                  spacemouse_event *event);
 
-/* Returns unique id for mouse device. The id that a device gets assigned is an
- * incremented number relative to previously assigned devices.
+/* Returns unique id for mouse device. The id that a device gets assigned is
+ * an incremented number relative to previously assigned devices.
  * Ids start at integer value 1.
  */
 int spacemouse_device_get_id(struct spacemouse *mouse);
@@ -156,7 +155,7 @@ int spacemouse_device_get_led(struct spacemouse *mouse);
  */
 int spacemouse_device_set_led(struct spacemouse *mouse, int state);
 
-/* Close the mouse->fd. Closes the file descriptor and sets mouse->fd to -1.
+/* Close the mouse's file descriptor and set it internally to -1.
  */
 void spacemouse_device_close(struct spacemouse *mouse);
 
