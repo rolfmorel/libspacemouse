@@ -19,7 +19,7 @@ $(lib_so): $(obj)
 	$(CC) -shared -Wl,-soname,$(soname) -o $@ $(obj) $(LDFLAGS) -L. -ludev
 
 %.o: %.c
-	$(CC) $(CFLAGS) -D MAP_AXIS_SPACENAVD -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: clean
 clean:
