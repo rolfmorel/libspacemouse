@@ -192,14 +192,18 @@ int spacemouse_device_set_led(struct spacemouse *mouse, int state)
   return 0;
 }
 
-void spacemouse_device_close(struct spacemouse *mouse)
+int spacemouse_device_close(struct spacemouse *mouse)
 {
+  int ret;
+
   if (!(mouse->fd > -1)) {
     errno = EBADF;
     return;
   }
 
-  close(mouse->fd);
+  ret = close(mouse->fd);
 
   mouse->fd = -1;
+
+  return ret;
 }

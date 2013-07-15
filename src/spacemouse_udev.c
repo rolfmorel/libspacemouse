@@ -238,10 +238,12 @@ struct spacemouse *spacemouse_monitor(int *action)
   return ret_mouse;
 }
 
-void spacemouse_monitor_close(void)
+int spacemouse_monitor_close(void)
 {
   if (udev_monitor)
     udev_monitor_unref(udev_monitor);
   if (udev)
     udev_unref(udev);
+
+  return 0;
 }

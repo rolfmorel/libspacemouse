@@ -40,6 +40,6 @@ int spacemouse_device_get_led(struct spacemouse *mouse);
 
 int spacemouse_device_set_led(struct spacemouse *mouse, int state);
 
-void spacemouse_device_close(struct spacemouse *mouse);
+int spacemouse_device_close(struct spacemouse *mouse);
 
 #endif

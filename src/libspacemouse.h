@@ -99,7 +99,7 @@ struct spacemouse *spacemouse_monitor(int *action);
 
 /* Closes the system device manager connection.
  */
-void spacemouse_monitor_close(void);
+int spacemouse_monitor_close(void);
 
 /* Opens the device node in /dev for the mouse device.
  * Sets mouse's file descriptor and returns it or -1 in case of error.
@@ -157,7 +157,7 @@ int spacemouse_device_set_led(struct spacemouse *mouse, int state);
 
 /* Close the mouse's file descriptor and set it internally to -1.
  */
-void spacemouse_device_close(struct spacemouse *mouse);
+int spacemouse_device_close(struct spacemouse *mouse);
 
 #ifdef __cplusplus
 }

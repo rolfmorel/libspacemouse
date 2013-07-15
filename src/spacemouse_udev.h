@@ -36,6 +36,6 @@ int spacemouse_monitor_open(void);
 
 struct spacemouse *spacemouse_monitor(int *action);
 
-void spacemouse_monitor_close(void);
+int spacemouse_monitor_close(void);
 
 #endif
