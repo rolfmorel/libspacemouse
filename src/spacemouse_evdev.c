@@ -62,7 +62,7 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
   struct input_event input_event;
   struct spacemouse_event_button button_event = { 0, 0, 0 };
   ssize_t bytes;
-  int ret = -1, axis_idx, invert = 1;
+  int ret = -1, axis_idx, axis_code, invert = 1;
   int *int_ptr;
 
   while (ret == -1) {
@@ -76,25 +76,15 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
 
     switch (input_event.type) {
       case EV_REL:
-        mouse->buf.motion.type = SPACEMOUSE_EVENT_MOTION;
-#ifndef MAP_AXIS_SPACENAVD
-        axis_idx = input_event.code - REL_X;
-#else
-        axis_idx = map_axis[input_event.code - REL_X];
-        invert = map_invert[input_event.code - REL_X];
-#endif
-
-        int_ptr = &(mouse->buf.motion.x);
-        int_ptr[axis_idx] = invert * input_event.value;
-        break;
-
       case EV_ABS:
+        axis_code = (input_event.type == EV_REL) ? REL_X : ABS_X;
+
         mouse->buf.motion.type = SPACEMOUSE_EVENT_MOTION;
 #ifndef MAP_AXIS_SPACENAVD
-        axis_idx = input_event.code - ABS_X;
+        axis_idx = input_event.code - axis_code;
 #else
-        axis_idx = map_axis[input_event.code - ABS_X];
-        invert = map_invert[input_event.code - ABS_X];
+        axis_idx = map_axis[input_event.code - axis_code];
+        invert = map_invert[input_event.code - axis_code];
 #endif
 
         int_ptr = &(mouse->buf.motion.x);
