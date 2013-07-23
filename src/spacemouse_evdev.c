@@ -46,16 +46,6 @@ int spacemouse_device_open(struct spacemouse *mouse)
   return (mouse->fd = fd);
 }
 
-int spacemouse_device_grab(struct spacemouse *mouse)
-{
-  return ioctl(mouse->fd, EVIOCGRAB, (void*)1);
-}
-
-int spacemouse_device_ungrab(struct spacemouse *mouse)
-{
-  return ioctl(mouse->fd, EVIOCGRAB, (void*)0);
-}
-
 int spacemouse_device_read_event(struct spacemouse *mouse,
                                  spacemouse_event *mouse_event)
 {
@@ -125,6 +115,13 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
   }
 
   return ret;
+}
+
+int spacemouse_device_set_grab(struct spacemouse *mouse, int grab)
+{
+  if (grab == 0 || grab == 1)
+    return ioctl(mouse->fd, EVIOCGRAB, grab ? (void *)1 : (void *)0);
+  return -1;
 }
 
 int spacemouse_device_get_led(struct spacemouse *mouse)

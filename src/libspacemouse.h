@@ -106,10 +106,6 @@ int spacemouse_monitor_close(void);
  */
 int spacemouse_device_open(struct spacemouse *mouse);
 
-int spacemouse_device_grab(struct spacemouse *mouse);
-
-int spacemouse_device_ungrab(struct spacemouse *mouse);
-
 /* Wraps system HID protocol (evdev on Linux). Reads on mouse's file
  * descriptor (it blocks on read, use select, poll, etc.). Returns one of
  * SPACEMOUSE_READ_*. IGNORE when receiving an unuseful event. event is only
@@ -145,6 +141,8 @@ char const * const spacemouse_device_get_manufacturer(
  * device. This string is only valid as long as the device is still connected.
  */
 char const * const spacemouse_device_get_product(struct spacemouse *mouse);
+
+int spacemouse_device_set_grab(struct spacemouse *mouse, int grab);
 
 /* Get state of led of mouse device. 1 if on, 0 if off, or -1 in case of
  * error.
