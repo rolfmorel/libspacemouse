@@ -23,7 +23,8 @@ along with libspacemouse.  If not, see <http://www.gnu.org/licenses/>.
 enum {
   SPACEMOUSE_EVENT_ANY,
   SPACEMOUSE_EVENT_MOTION,
-  SPACEMOUSE_EVENT_BUTTON
+  SPACEMOUSE_EVENT_BUTTON,
+  SPACEMOUSE_EVENT_LED
 };
 
 enum {
@@ -50,10 +51,16 @@ struct spacemouse_event_button {
   int bnum;
 };
 
+struct spacemouse_event_led {
+  int type;
+  int state;
+};
+
 typedef union spacemouse_event {
   int type;
   struct spacemouse_event_motion motion;
   struct spacemouse_event_button button;
+  struct spacemouse_event_led led;
 } spacemouse_event;
 
 struct spacemouse;
