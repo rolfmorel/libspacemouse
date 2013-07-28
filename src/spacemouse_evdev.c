@@ -138,16 +138,18 @@ int spacemouse_device_get_led(struct spacemouse *mouse)
 
 int spacemouse_device_set_led(struct spacemouse *mouse, int state)
 {
-  struct input_event input_event;
+  struct input_event input_events[2];
 
-  memset(&input_event, 0, sizeof input_event);
-  input_event.type = EV_LED;
-  input_event.code = LED_MISC;
-  input_event.value = state;
+  input_events[0].type = EV_LED;
+  input_events[0].code = LED_MISC;
+  input_events[0].value = state;
 
-  if (write(mouse->fd, &input_event, sizeof input_event) == -1) {
+  input_events[1].type = EV_SYN;
+  input_events[1].code = SYN_REPORT;
+
+  if (write(mouse->fd, input_events, sizeof input_events) !=
+      sizeof input_events)
     return -1;
-  }
 
   return 0;
 }
