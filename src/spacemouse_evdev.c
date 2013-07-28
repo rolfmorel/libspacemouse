@@ -50,9 +50,8 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
                                  spacemouse_event *mouse_event)
 {
   struct input_event input_event;
-  struct spacemouse_event_button button_event = { 0, 0, 0 };
   ssize_t bytes;
-  int ret = -1, axis_idx, axis_code, invert = 1;
+  int ret = -1, type = -1, axis_idx, axis_code, invert = 1;
 
   while (ret == -1) {
 
@@ -68,7 +67,7 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
       case EV_ABS:
         axis_code = (input_event.type == EV_REL) ? REL_X : ABS_X;
 
-        mouse->buf.motion.type = SPACEMOUSE_EVENT_MOTION;
+        type = mouse->buf.motion.type = SPACEMOUSE_EVENT_MOTION;
 #ifndef MAP_AXIS_SPACENAVD
         axis_idx = input_event.code - axis_code;
 #else
@@ -80,13 +79,20 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
         break;
 
       case EV_KEY:
-        button_event.type = SPACEMOUSE_EVENT_BUTTON;
-        button_event.bnum = input_event.code - BTN_0;
-        button_event.press = input_event.value;
+        type = mouse_event->type = SPACEMOUSE_EVENT_BUTTON;
+        mouse_event->button.bnum = input_event.code - BTN_0;
+        mouse_event->button.press = input_event.value;
+        break;
+
+      case EV_LED:
+        if (input_event.code == LED_MISC) {
+          type = mouse_event->type = SPACEMOUSE_EVENT_LED;
+          mouse_event->led.state = input_event.value;
+        }
         break;
 
       case EV_SYN:
-        if (mouse->buf.motion.type == SPACEMOUSE_EVENT_MOTION) {
+        if (type == SPACEMOUSE_EVENT_MOTION) {
           memcpy(mouse_event, &mouse->buf.motion, sizeof *mouse_event);
           if (mouse->buf.time.tv_sec != 0)
             mouse_event->motion.period = ((input_event.time.tv_sec * 1000 +
@@ -96,10 +102,8 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
 
           mouse->buf.time = input_event.time;
           mouse->buf.motion.type = 0;
-        } else if (button_event.type == SPACEMOUSE_EVENT_BUTTON) {
-          memcpy(mouse_event, &button_event, sizeof *mouse_event);
-          button_event.type = 0;
-        } else {
+        } else if (type != SPACEMOUSE_EVENT_BUTTON &&
+                   type != SPACEMOUSE_EVENT_LED) {
           ret = SPACEMOUSE_READ_IGNORE;
           break;
         }
