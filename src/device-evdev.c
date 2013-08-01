@@ -17,7 +17,6 @@ You should have received a copy of the GNU Lesser General Public License
 along with libspacemouse.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <errno.h>
 #include <unistd.h>
 #include <string.h>
 #include <fcntl.h>
