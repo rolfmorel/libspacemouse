@@ -24,7 +24,8 @@ along with libspacemouse.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <libudev.h>
 
-#include "spacemouse_udev.h"
+#include "libspacemouse.h"
+#include "types.h"
 
 static struct spacemouse *spacemouse_head = NULL;
 

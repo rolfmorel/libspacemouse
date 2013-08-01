@@ -17,29 +17,30 @@ You should have received a copy of the GNU Lesser General Public License
 along with libspacemouse.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "spacemouse_opaque.h"
+#ifndef _TYPES_H_
+#define _TYPES_H_
 
-struct spacemouse *spacemouse_device_list_get_next(struct spacemouse *mouse) {
-  return mouse->next;
-}
+#include <sys/time.h>
 
-int spacemouse_device_get_id(struct spacemouse *mouse) {
-  return mouse->id;
-}
+#include "libspacemouse.h"
 
-int spacemouse_device_get_fd(struct spacemouse *mouse) {
-  return mouse->fd;
-}
+struct spacemouse_buf {
+  struct spacemouse_event_motion motion;
+  struct timeval time;
+};
 
-char const * const spacemouse_device_get_devnode(struct spacemouse *mouse) {
-  return mouse->devnode;
-}
+struct spacemouse {
+  int id;
+  int fd;
 
-char const * const spacemouse_device_get_manufacturer(
-    struct spacemouse *mouse) {
-  return mouse->manufacturer;
-}
+  char *devnode;
 
-char const * const spacemouse_device_get_product(struct spacemouse *mouse) {
-  return mouse->product;
-}
+  char *manufacturer;
+  char *product;
+
+  struct spacemouse_buf buf;
+
+  struct spacemouse *next;
+};
+
+#endif
