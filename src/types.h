@@ -17,8 +17,8 @@ You should have received a copy of the GNU Lesser General Public License
 along with libspacemouse.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _SPACEMOUSE_H_
-#define _SPACEMOUSE_H_
+#ifndef _TYPES_H_
+#define _TYPES_H_
 
 #include <sys/time.h>
 
