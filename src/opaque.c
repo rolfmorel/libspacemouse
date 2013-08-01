@@ -17,7 +17,8 @@ You should have received a copy of the GNU Lesser General Public License
 along with libspacemouse.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "spacemouse_opaque.h"
+#include "libspacemouse.h"
+#include "types.h"
 
 struct spacemouse *spacemouse_device_list_get_next(struct spacemouse *mouse) {
   return mouse->next;

@@ -1,5 +1,5 @@
-header = spacemouse.h spacemouse_udev.h spacemouse_evdev.h spacemouse_opaque.h
-obj = spacemouse_udev.o spacemouse_evdev.o spacemouse_opaque.o
+header = types.h
+obj = opaque.o list-and-monitor-udev.o device-evdev.o
 lib_a = libspacemouse.a
 soname = libspacemouse.so.0
 lib_so = $(soname).1

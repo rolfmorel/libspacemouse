@@ -25,7 +25,8 @@ along with libspacemouse.  If not, see <http://www.gnu.org/licenses/>.
 #include <sys/ioctl.h>
 #include <linux/input.h>
 
-#include "spacemouse_evdev.h"
+#include "libspacemouse.h"
+#include "types.h"
 
 #ifdef MAP_AXIS_SPACENAVD
 /* Map axis the same way spacenavd/libspnav does by default. */
