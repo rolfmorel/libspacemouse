@@ -149,6 +149,8 @@ char const * const spacemouse_device_get_manufacturer(
  */
 char const * const spacemouse_device_get_product(struct spacemouse *mouse);
 
+int spacemouse_device_get_max_axis_deviation(struct spacemouse *mouse);
+
 int spacemouse_device_set_grab(struct spacemouse *mouse, int grab);
 
 /* Get state of led of mouse device. 1 if on, 0 if off, or -1 in case of

@@ -124,6 +124,44 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
   return ret;
 }
 
+int spacemouse_device_get_max_axis_deviation(struct spacemouse *mouse)
+{
+  unsigned long bits[NLONGS(EV_CNT)];
+
+  if (ioctl(mouse->fd, EVIOCGBIT(0, EV_MAX), bits) < 0)
+    return -1;
+
+  if (1UL << (EV_ABS % LONG_BITS) & bits[EV_ABS / LONG_BITS]) {
+    int axis, val = -1;
+
+    if (ioctl(mouse->fd, EVIOCGBIT(EV_ABS, sizeof(bits)), bits) < 0)
+      return -1;
+
+    /* Make sure the max deviation of all axes, both positive and negative,
+     * have the same value. */
+    for (axis = ABS_X; axis <= ABS_RZ; axis++) {
+      if (1UL << (axis % LONG_BITS) & bits[axis / LONG_BITS]) {
+        struct input_absinfo absinfo;
+
+        if (ioctl(mouse->fd, EVIOCGABS(axis), &absinfo) < 0)
+          return -1;
+
+        if (axis == ABS_X)
+          val = absinfo.maximum;
+
+        if (val != absinfo.maximum || -val != absinfo.minimum)
+          return -1;
+      }
+    }
+    return val;
+  } else if (1UL << (EV_REL % LONG_BITS) & bits[EV_REL / LONG_BITS])
+    /* the kernel probably does not "fixing up rel/abs in Logitech report
+     * descriptor." The default value for 3Dconnexion devices should be 500. */
+     return 500;
+
+  return -1;
+}
+
 int spacemouse_device_set_grab(struct spacemouse *mouse, int grab)
 {
   if (grab == 0 || grab == 1)
