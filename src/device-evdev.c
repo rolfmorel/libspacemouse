@@ -27,6 +27,9 @@ along with libspacemouse.  If not, see <http://www.gnu.org/licenses/>.
 #include "libspacemouse.h"
 #include "types.h"
 
+#define LONG_BITS (sizeof(long) * 8)
+#define NLONGS(x) (((x) + LONG_BITS - 1) / LONG_BITS)
+
 #ifdef MAP_AXIS_SPACENAVD
 /* Map axis the same way spacenavd/libspnav does by default. */
 static const int map_axis[] = { 0, 2, 1, 3, 5, 4 };
@@ -130,14 +133,12 @@ int spacemouse_device_set_grab(struct spacemouse *mouse, int grab)
 
 int spacemouse_device_get_led(struct spacemouse *mouse)
 {
-  unsigned char state[(LED_MAX / 8) + 1];
+  unsigned long bits[NLONGS(LED_CNT)] = { 0 };
 
-  memset(state, 0, sizeof state);
-
-  if (ioctl(mouse->fd, EVIOCGLED(LED_MAX), state) == -1)
+  if (ioctl(mouse->fd, EVIOCGLED(LED_MAX), bits) == -1)
     return -1;
 
-  return (1UL << LED_MISC & ((unsigned long *) state)[0]) != 0;
+  return (1UL << (LED_MISC % LONG_BITS) & bits[LED_MISC / LONG_BITS]) != 0;
 }
 
 int spacemouse_device_set_led(struct spacemouse *mouse, int state)
