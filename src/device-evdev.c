@@ -52,45 +52,45 @@ int spacemouse_device_open(struct spacemouse *mouse)
 int spacemouse_device_read_event(struct spacemouse *mouse,
                                  spacemouse_event *mouse_event)
 {
-  struct input_event input_event;
+  struct input_event ev;
   ssize_t bytes;
   int ret = -1, type = -1, axis_idx, axis_code, invert = 1;
 
   while (ret == -1) {
 
     do {
-      bytes = read(mouse->fd, &input_event, sizeof input_event);
+      bytes = read(mouse->fd, &ev, sizeof ev);
     } while (bytes == -1 && errno == EINTR);
 
-    if (bytes < sizeof input_event || errno == ENODEV)
+    if (bytes < sizeof ev || errno == ENODEV)
       return -1;
 
-    switch (input_event.type) {
+    switch (ev.type) {
       case EV_REL:
       case EV_ABS:
-        axis_code = (input_event.type == EV_REL) ? REL_X : ABS_X;
+        axis_code = (ev.type == EV_REL) ? REL_X : ABS_X;
 
         type = mouse->buf.motion.type = SPACEMOUSE_EVENT_MOTION;
 #ifndef MAP_AXIS_SPACENAVD
-        axis_idx = input_event.code - axis_code;
+        axis_idx = ev.code - axis_code;
 #else
-        axis_idx = map_axis[input_event.code - axis_code];
-        invert = map_invert[input_event.code - axis_code];
+        axis_idx = map_axis[ev.code - axis_code];
+        invert = map_invert[ev.code - axis_code];
 #endif
 
-        (&mouse->buf.motion.x)[axis_idx] = invert * input_event.value;
+        (&mouse->buf.motion.x)[axis_idx] = invert * ev.value;
         break;
 
       case EV_KEY:
         type = mouse_event->type = SPACEMOUSE_EVENT_BUTTON;
-        mouse_event->button.bnum = input_event.code - BTN_0;
-        mouse_event->button.press = input_event.value;
+        mouse_event->button.bnum = ev.code - BTN_0;
+        mouse_event->button.press = ev.value;
         break;
 
       case EV_LED:
-        if (input_event.code == LED_MISC) {
+        if (ev.code == LED_MISC) {
           type = mouse_event->type = SPACEMOUSE_EVENT_LED;
-          mouse_event->led.state = input_event.value;
+          mouse_event->led.state = ev.value;
         }
         break;
 
@@ -98,12 +98,12 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
         if (type == SPACEMOUSE_EVENT_MOTION) {
           memcpy(mouse_event, &mouse->buf.motion, sizeof *mouse_event);
           if (mouse->buf.time.tv_sec != 0)
-            mouse_event->motion.period = ((input_event.time.tv_sec * 1000 +
-                                           input_event.time.tv_usec / 1000) -
+            mouse_event->motion.period = ((ev.time.tv_sec * 1000 +
+                                           ev.time.tv_usec / 1000) -
                                           (mouse->buf.time.tv_sec * 1000 +
                                            mouse->buf.time.tv_usec / 1000));
 
-          mouse->buf.time = input_event.time;
+          mouse->buf.time = ev.time;
           mouse->buf.motion.type = 0;
         } else if (type != SPACEMOUSE_EVENT_BUTTON &&
                    type != SPACEMOUSE_EVENT_LED) {
@@ -181,17 +181,16 @@ int spacemouse_device_get_led(struct spacemouse *mouse)
 
 int spacemouse_device_set_led(struct spacemouse *mouse, int state)
 {
-  struct input_event input_events[2];
+  struct input_event ev[2];
 
-  input_events[0].type = EV_LED;
-  input_events[0].code = LED_MISC;
-  input_events[0].value = state;
+  ev[0].type = EV_LED;
+  ev[0].code = LED_MISC;
+  ev[0].value = state;
 
-  input_events[1].type = EV_SYN;
-  input_events[1].code = SYN_REPORT;
+  ev[1].type = EV_SYN;
+  ev[1].code = SYN_REPORT;
 
-  if (write(mouse->fd, input_events, sizeof input_events) !=
-      sizeof input_events)
+  if (write(mouse->fd, ev, sizeof ev) != sizeof ev)
     return -1;
 
   return 0;
