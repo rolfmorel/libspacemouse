@@ -10,10 +10,11 @@ int main()
 
   spacemouse_monitor_open();
 
-  if (spacemouse_device_list_update() == NULL)
+  spacemouse_device_list(&iter, 1);
+  if (iter == NULL)
     printf("No devices found.\n");
 
-  spacemouse_device_list_foreach(iter, spacemouse_device_list()) {
+  spacemouse_device_list_foreach(iter, iter) {
     printf("device id: %d\n", spacemouse_device_get_id(iter));
     printf("  devnode: %s\n", spacemouse_device_get_devnode(iter));
     printf("  manufacturer: %s\n", spacemouse_device_get_manufacturer(iter));
@@ -22,9 +23,9 @@ int main()
 
   printf("Entering monitor loop.\n");
   while(1) {
-    mon_mouse = spacemouse_monitor(&action);
+    action = spacemouse_monitor(&mon_mouse);
 
-    if (action == -1)
+    if (action < 0)
       break;
     else if (action == SPACEMOUSE_ACTION_ADD) {
       printf("Device added, ");

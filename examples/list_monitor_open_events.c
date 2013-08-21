@@ -9,23 +9,24 @@
 int main()
 {
   struct spacemouse *iter, *mon_mouse;
-  spacemouse_event mouse_event;
+  spacemouse_event_t mouse_event;
   fd_set fds;
   int mouse_fd, monitor_fd, max_fd;
   int action, read_event;
 
   monitor_fd = spacemouse_monitor_open();
 
-  if (spacemouse_device_list_update() == NULL)
+  spacemouse_device_list(&iter, 1);
+  if (iter == NULL)
     printf("No devices found.\n");
 
-  spacemouse_device_list_foreach(iter, spacemouse_device_list()) {
+  spacemouse_device_list_foreach(iter, iter) {
     printf("device id: %d\n", spacemouse_device_get_id(iter));
     printf("  devnode: %s\n", spacemouse_device_get_devnode(iter));
     printf("  manufacturer: %s\n", spacemouse_device_get_manufacturer(iter));
     printf("  product: %s\n", spacemouse_device_get_product(iter));
 
-    if (spacemouse_device_open(iter) == -1)
+    if (spacemouse_device_open(iter) < 0)
       fprintf(stderr, "Failed to open device: %s\n",
               spacemouse_device_get_devnode(iter));
 
@@ -37,7 +38,8 @@ int main()
     FD_SET(monitor_fd, &fds);
     max_fd = monitor_fd;
 
-    spacemouse_device_list_foreach(iter, spacemouse_device_list())
+    spacemouse_device_list(&iter, 0);
+    spacemouse_device_list_foreach(iter, iter)
       if ((mouse_fd = spacemouse_device_get_fd(iter)) > -1) {
         FD_SET(mouse_fd, &fds);
         if (mouse_fd > max_fd) max_fd = mouse_fd;
@@ -49,7 +51,7 @@ int main()
     }
 
     if (FD_ISSET(monitor_fd, &fds)) {
-      mon_mouse = spacemouse_monitor(&action);
+      action = spacemouse_monitor(&mon_mouse);
 
       if (action == SPACEMOUSE_ACTION_ADD) {
         printf("Device added, ");
@@ -73,7 +75,8 @@ int main()
       }
     }
 
-    spacemouse_device_list_foreach(iter, spacemouse_device_list()) {
+    spacemouse_device_list(&iter, 0);
+    spacemouse_device_list_foreach(iter, iter) {
       mouse_fd = spacemouse_device_get_fd(iter);
       if (mouse_fd > -1 && FD_ISSET(mouse_fd, &fds)) {
         memset(&mouse_event, 0, sizeof mouse_event);
