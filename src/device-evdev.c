@@ -42,15 +42,15 @@ int spacemouse_device_open(struct spacemouse *mouse)
 
   if ((fd = open(mouse->devnode, O_RDWR)) == -1) {
      if ((fd = open(mouse->devnode, O_RDONLY)) == -1) {
-      return -1;
+      return -errno;
     }
   }
 
   return (mouse->fd = fd);
 }
 
-int spacemouse_device_read_event(struct spacemouse *mouse,
-                                 spacemouse_event *mouse_event)
+enum spacemouse_read_result spacemouse_device_read_event(
+    struct spacemouse *mouse, spacemouse_event_t *event)
 {
   struct input_event ev;
   ssize_t bytes;
@@ -63,7 +63,7 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
     } while (bytes == -1 && errno == EINTR);
 
     if (bytes < sizeof ev || errno == ENODEV)
-      return -1;
+      return -errno;
 
     switch (ev.type) {
       case EV_REL:
@@ -82,26 +82,26 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
         break;
 
       case EV_KEY:
-        type = mouse_event->type = SPACEMOUSE_EVENT_BUTTON;
-        mouse_event->button.bnum = ev.code - BTN_0;
-        mouse_event->button.press = ev.value;
+        type = event->type = SPACEMOUSE_EVENT_BUTTON;
+        event->button.bnum = ev.code - BTN_0;
+        event->button.press = ev.value;
         break;
 
       case EV_LED:
         if (ev.code == LED_MISC) {
-          type = mouse_event->type = SPACEMOUSE_EVENT_LED;
-          mouse_event->led.state = ev.value;
+          type = event->type = SPACEMOUSE_EVENT_LED;
+          event->led.state = ev.value;
         }
         break;
 
       case EV_SYN:
         if (type == SPACEMOUSE_EVENT_MOTION) {
-          memcpy(mouse_event, &mouse->buf.motion, sizeof *mouse_event);
+          memcpy(event, &mouse->buf.motion, sizeof *event);
           if (mouse->buf.time.tv_sec != 0)
-            mouse_event->motion.period = ((ev.time.tv_sec * 1000 +
-                                           ev.time.tv_usec / 1000) -
-                                          (mouse->buf.time.tv_sec * 1000 +
-                                           mouse->buf.time.tv_usec / 1000));
+            event->motion.period = ((ev.time.tv_sec * 1000 +
+                                     ev.time.tv_usec / 1000) -
+                                    (mouse->buf.time.tv_sec * 1000 +
+                                     mouse->buf.time.tv_usec / 1000));
 
           mouse->buf.time = ev.time;
           mouse->buf.motion.type = 0;
@@ -128,14 +128,14 @@ int spacemouse_device_get_max_axis_deviation(struct spacemouse *mouse)
 {
   unsigned long bits[NLONGS(EV_CNT)];
 
-  if (ioctl(mouse->fd, EVIOCGBIT(0, EV_MAX), bits) < 0)
-    return -1;
+  if (ioctl(mouse->fd, EVIOCGBIT(0, EV_MAX), bits) == -1)
+    return -errno;
 
   if (1UL << (EV_ABS % LONG_BITS) & bits[EV_ABS / LONG_BITS]) {
     int axis, val = -1;
 
-    if (ioctl(mouse->fd, EVIOCGBIT(EV_ABS, sizeof(bits)), bits) < 0)
-      return -1;
+    if (ioctl(mouse->fd, EVIOCGBIT(EV_ABS, sizeof(bits)), bits) == -1)
+      return -errno;
 
     /* Make sure the max deviation of all axes, both positive and negative,
      * have the same value. */
@@ -143,8 +143,8 @@ int spacemouse_device_get_max_axis_deviation(struct spacemouse *mouse)
       if (1UL << (axis % LONG_BITS) & bits[axis / LONG_BITS]) {
         struct input_absinfo absinfo;
 
-        if (ioctl(mouse->fd, EVIOCGABS(axis), &absinfo) < 0)
-          return -1;
+        if (ioctl(mouse->fd, EVIOCGABS(axis), &absinfo) == -1)
+          return -errno;
 
         if (axis == ABS_X)
           val = absinfo.maximum;
@@ -165,8 +165,10 @@ int spacemouse_device_get_max_axis_deviation(struct spacemouse *mouse)
 int spacemouse_device_set_grab(struct spacemouse *mouse, int grab)
 {
   if (grab == 0 || grab == 1)
-    return ioctl(mouse->fd, EVIOCGRAB, grab ? (void *)1 : (void *)0);
-  return -1;
+    if (ioctl(mouse->fd, EVIOCGRAB, grab ? (void *)1 : (void *)0) == -1)
+      return -errno;
+    return 0;
+  return -EINVAL;
 }
 
 int spacemouse_device_get_led(struct spacemouse *mouse)
@@ -174,7 +176,7 @@ int spacemouse_device_get_led(struct spacemouse *mouse)
   unsigned long bits[NLONGS(LED_CNT)] = { 0 };
 
   if (ioctl(mouse->fd, EVIOCGLED(LED_MAX), bits) == -1)
-    return -1;
+    return -errno;
 
   return (1UL << (LED_MISC % LONG_BITS) & bits[LED_MISC / LONG_BITS]) != 0;
 }
@@ -191,7 +193,7 @@ int spacemouse_device_set_led(struct spacemouse *mouse, int state)
   ev[1].code = SYN_REPORT;
 
   if (write(mouse->fd, ev, sizeof ev) != sizeof ev)
-    return -1;
+    return -errno;
 
   return 0;
 }
@@ -202,5 +204,5 @@ int spacemouse_device_close(struct spacemouse *mouse)
 
   mouse->fd = -1;
 
-  return ret;
+  return ret == -1 ? -errno : ret;
 }

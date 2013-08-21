@@ -22,20 +22,19 @@ along with libspacemouse.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef _LIBSPACEMOUSE_H_
 #define _LIBSPACEMOUSE_H_
 
-enum {
-  SPACEMOUSE_EVENT_ANY,
-  SPACEMOUSE_EVENT_MOTION,
-  SPACEMOUSE_EVENT_BUTTON,
-  SPACEMOUSE_EVENT_LED
+enum spacemouse_event_type {
+  SPACEMOUSE_EVENT_MOTION = 1,
+  SPACEMOUSE_EVENT_BUTTON = 2,
+  SPACEMOUSE_EVENT_LED = 4
 };
 
-enum {
+enum spacemouse_action {
   SPACEMOUSE_ACTION_IGNORE,
   SPACEMOUSE_ACTION_ADD,
   SPACEMOUSE_ACTION_REMOVE
 };
 
-enum {
+enum spacemouse_read_result {
   SPACEMOUSE_READ_IGNORE,
   SPACEMOUSE_READ_SUCCESS
 };
@@ -63,7 +62,7 @@ typedef union spacemouse_event {
   struct spacemouse_event_motion motion;
   struct spacemouse_event_button button;
   struct spacemouse_event_led led;
-} spacemouse_event;
+} spacemouse_event_t;
 
 /**
  * Opaque structure representing a spacemouse device
@@ -75,24 +74,22 @@ extern "C" {
 #endif
 
 /**
- * Return the head of the internal device list.
- *
- * Use spacemouse_device_list_update() at least once to initialize the list.
- *
- * @return First device in list or NULL, when NULL check errno for errors.
- */
-struct spacemouse *spacemouse_device_list(void);
-
-/**
- * Discover devices and initialize/update the internal device list.
+ * Get first device in list and initialize/update the internal device list.
  *
  * When the monitor functions are used this function should only be called once
  * to initialize the internal list.
  *
- * @return Head of internal device list or NULL, when NULL check errno for
- * errors.
+ * This functions should at least once be called with update argument set to 1.
+ *
+ * @param mouse_ptr Pointer pointer which will be set to point to the first
+ * device in list on successfull return.
+ * @param update Set to 0 to only return the current head of the device list,
+ * or 1 to first initialize/update the device list.
+ *
+ * @return 0 on success or negative errno on errro.
  */
-struct spacemouse *spacemouse_device_list_update(void);
+int
+spacemouse_device_list(struct spacemouse **mouse_ptr, int update);
 
 /**
  * Returns next node in the device list.
@@ -102,10 +99,11 @@ struct spacemouse *spacemouse_device_list_update(void);
  *
  * @param mouse The device of which the next device is to be returned.
  *
- * @return Next device in internal list or NULL. If NULL check errno for
- * errors, else reached end of list.
+ * @return Next device in internal list or NULL when there are no further
+ * devices.
  */
-struct spacemouse *spacemouse_device_list_get_next(struct spacemouse *mouse);
+struct spacemouse *
+spacemouse_device_list_get_next(struct spacemouse *mouse);
 
 /**
  * Macro which expands to a convient for loop to iterate over the device list.
@@ -122,7 +120,8 @@ struct spacemouse *spacemouse_device_list_get_next(struct spacemouse *mouse);
  *
  * @return File descriptor of the opened connection or -1 in case of error.
  */
-int spacemouse_monitor_open(void);
+int
+spacemouse_monitor_open(void);
 
 /**
  * Wrap system device manager connection.
@@ -135,22 +134,25 @@ int spacemouse_monitor_open(void);
  *
  * The cached device is only valid until the next device removal.
  *
- * @param[out] action One of SPACEMOUSE_ACTION_*, or -1 in case of error.
+ * @param[out] mouse_ptr Pointer pointer which on return code is ADD, is set to
+ * point to the new device in the spacemouse list. If return code is REMOVE, is
+ * set to point to the cached device. If return code is IGNORE, value is
+ * undefined and should be ignored.
  *
- * @return If action is ADD, pointer to the new device in the spacemouse list.
- * If action is REMOVE, pointer to the cached device. If action is IGNORE,
- * return should be ignored.
+ * @return One of SPACEMOUSE_ACTION_*, or -1 in case of error.
  *
  * @note Blocks on read, use select, poll, etc.
  */
-struct spacemouse *spacemouse_monitor(int *action);
+enum spacemouse_action
+spacemouse_monitor(struct spacemouse **mouse_ptr);
 
 /**
  * Close the system device manager connection.
  *
  * @return 0 on succes or -1 in case of error.
  */
-int spacemouse_monitor_close(void);
+int
+spacemouse_monitor_close(void);
 
 /**
  * Open the device node for the device.
@@ -161,7 +163,8 @@ int spacemouse_monitor_close(void);
  *
  * @return device's opened file descriptor or -1 in case of error.
  */
-int spacemouse_device_open(struct spacemouse *mouse);
+int
+spacemouse_device_open(struct spacemouse *mouse);
 
 /**
  * Wrap system HID protocol.
@@ -180,8 +183,9 @@ int spacemouse_device_open(struct spacemouse *mouse);
  *
  * @note Blocks on read, use select, poll, etc.
  */
-int spacemouse_device_read_event(struct spacemouse *mouse,
-                                 spacemouse_event *event);
+enum spacemouse_read_result
+spacemouse_device_read_event(struct spacemouse *mouse,
+                             spacemouse_event_t *event);
 
 /**
  * Return unique id of device.
@@ -194,7 +198,8 @@ int spacemouse_device_read_event(struct spacemouse *mouse,
  *
  * @return The device's unique id.
  */
-int spacemouse_device_get_id(struct spacemouse *mouse);
+int
+spacemouse_device_get_id(struct spacemouse *mouse);
 
 /**
  * Return file descriptor that was opened by spacemouse_device_open(mouse).
@@ -206,7 +211,8 @@ int spacemouse_device_get_id(struct spacemouse *mouse);
  *
  * @note Unopened/closed devices have their the file descriptor set to -1.
  */
-int spacemouse_device_get_fd(struct spacemouse *mouse);
+int
+spacemouse_device_get_fd(struct spacemouse *mouse);
 
 /**
  * Return path of the device node of the device.
@@ -219,7 +225,8 @@ int spacemouse_device_get_fd(struct spacemouse *mouse);
  * @note The returned string is only valid as long as the device is still
  * connected.
  */
-char const * const spacemouse_device_get_devnode(struct spacemouse *mouse);
+char const * const
+spacemouse_device_get_devnode(struct spacemouse *mouse);
 
 /**
  * Return manufacturer string of the device.
@@ -232,8 +239,8 @@ char const * const spacemouse_device_get_devnode(struct spacemouse *mouse);
  * @note The returned string is only valid as long as the device is still
  * connected.
  */
-char const * const spacemouse_device_get_manufacturer(
-    struct spacemouse *mouse);
+char const * const
+spacemouse_device_get_manufacturer(struct spacemouse *mouse);
 
 /**
  * Return product string of the device.
@@ -246,7 +253,8 @@ char const * const spacemouse_device_get_manufacturer(
  * @note The returned string is only valid as long as the device is still
  * connected.
  */
-char const * const spacemouse_device_get_product(struct spacemouse *mouse);
+char const * const
+spacemouse_device_get_product(struct spacemouse *mouse);
 
 /**
  * Return maximux deviation possible on a axis, valid for all axes of device.
@@ -256,7 +264,8 @@ char const * const spacemouse_device_get_product(struct spacemouse *mouse);
  * @return The maximum deviation for all axes of device, or -1 in case of
  * error, i.e. device not opened.
  */
-int spacemouse_device_get_max_axis_deviation(struct spacemouse *mouse);
+int
+spacemouse_device_get_max_axis_deviation(struct spacemouse *mouse);
 
 /**
  * Set grab status of device.
@@ -270,7 +279,8 @@ int spacemouse_device_get_max_axis_deviation(struct spacemouse *mouse);
  *
  * @return 0 on success, -1 in case of error.
  */
-int spacemouse_device_set_grab(struct spacemouse *mouse, int grab);
+int
+spacemouse_device_set_grab(struct spacemouse *mouse, int grab);
 
 /**
  * Get state of led of device.
@@ -279,7 +289,8 @@ int spacemouse_device_set_grab(struct spacemouse *mouse, int grab);
  *
  * @return 1 if on, 0 if off, or -1 in case of error.
  */
-int spacemouse_device_get_led(struct spacemouse *mouse);
+int
+spacemouse_device_get_led(struct spacemouse *mouse);
 
 /**
  * Set state of led of mouse device.
@@ -289,7 +300,8 @@ int spacemouse_device_get_led(struct spacemouse *mouse);
  *
  * @return 0 on success, or -1 in case of error.
  */
-int spacemouse_device_set_led(struct spacemouse *mouse, int state);
+int
+spacemouse_device_set_led(struct spacemouse *mouse, int state);
 
 /**
  * Close the device's file descriptor.
@@ -300,7 +312,8 @@ int spacemouse_device_set_led(struct spacemouse *mouse, int state);
  *
  * @return 0 on success, or -1 in case of error.
  */
-int spacemouse_device_close(struct spacemouse *mouse);
+int
+spacemouse_device_close(struct spacemouse *mouse);
 
 #ifdef __cplusplus
 }

@@ -20,6 +20,7 @@ along with libspacemouse.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 #include <fcntl.h>
 
 #include <libudev.h>
@@ -105,14 +106,9 @@ static void remove_device(struct spacemouse *mouse, int list_only)
   }
 }
 
-struct spacemouse *spacemouse_device_list(void)
-{
-  return spacemouse_head;
-}
-
 /* TODO: this function only adds new devices and doesn't remove devices udev
  * no longer lists */
-struct spacemouse *spacemouse_device_list_update(void)
+int spacemouse_device_list(struct spacemouse **mouse_ptr, int update)
 {
   struct udev *udev;
   struct udev_enumerate *enumerate;
@@ -120,41 +116,51 @@ struct spacemouse *spacemouse_device_list_update(void)
   struct udev_device *dev, *dev_parent;
   char const *syspath, *devnode, *attr_man, *attr_pro;
 
-  /* add error check */
-  udev = udev_new();
+  if (update == 0) {
+    *mouse_ptr = spacemouse_head;
+    return 0;
+  } else if (update == 1) {
+    /* add error check */
+    udev = udev_new();
 
-  enumerate = udev_enumerate_new(udev);
-  udev_enumerate_add_match_subsystem(enumerate, "input");
-  udev_enumerate_scan_devices(enumerate);
-  devices = udev_enumerate_get_list_entry(enumerate);
+    enumerate = udev_enumerate_new(udev);
+    udev_enumerate_add_match_subsystem(enumerate, "input");
+    udev_enumerate_scan_devices(enumerate);
+    devices = udev_enumerate_get_list_entry(enumerate);
 
-  udev_list_entry_foreach(dev_list_entry, devices) {
-    syspath = udev_list_entry_get_name(dev_list_entry);
-    dev = udev_device_new_from_syspath(udev, syspath);
+    udev_list_entry_foreach(dev_list_entry, devices) {
+      syspath = udev_list_entry_get_name(dev_list_entry);
+      dev = udev_device_new_from_syspath(udev, syspath);
 
-    devnode = udev_device_get_devnode(dev);
+      devnode = udev_device_get_devnode(dev);
 
-    dev_parent = udev_device_get_parent_with_subsystem_devtype(dev, "usb",
-                                                               "usb_device");
-    if (dev_parent != NULL &&
-        devnode != NULL && strstr(devnode, "event") != NULL) {
-      attr_man = udev_device_get_sysattr_value(dev_parent, "manufacturer");
-      attr_pro = udev_device_get_sysattr_value(dev_parent, "product");
-      if (attr_man != NULL && strcmp(attr_man, "3Dconnexion") == 0 &&
-          attr_pro != NULL) {
-        if (!devnode_used_in_list(devnode))
-            add_device(devnode, attr_man, attr_pro);
+      dev_parent = udev_device_get_parent_with_subsystem_devtype(dev, "usb",
+                                                                 "usb_device");
+      if (dev_parent != NULL &&
+          devnode != NULL && strstr(devnode, "event") != NULL) {
+        attr_man = udev_device_get_sysattr_value(dev_parent, "manufacturer");
+        attr_pro = udev_device_get_sysattr_value(dev_parent, "product");
+        if (attr_man != NULL && strcmp(attr_man, "3Dconnexion") == 0 &&
+            attr_pro != NULL) {
+          if (!devnode_used_in_list(devnode))
+              if (add_device(devnode, attr_man, attr_pro) == NULL)
+                return -errno;
+        }
       }
+
+      /* dev_parent is unreferenced/cleaned with child device */
+      udev_device_unref(dev);
     }
 
-    /* dev_parent is unreferenced/cleaned with child device */
-    udev_device_unref(dev);
-  }
+    udev_enumerate_unref(enumerate);
+    udev_unref(udev);
 
-  udev_enumerate_unref(enumerate);
-  udev_unref(udev);
+  } else
+    return -EINVAL;
 
-  return spacemouse_head;
+  *mouse_ptr = spacemouse_head;
+
+  return 0;
 }
 
 int spacemouse_monitor_open(void)
@@ -175,26 +181,28 @@ int spacemouse_monitor_open(void)
 
   fd = udev_monitor_get_fd(udev_monitor);
 
+  if (fd < 0)
+    return -errno;
+
   fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) & ~O_NONBLOCK);
 
   return fd;
 }
 
-struct spacemouse *spacemouse_monitor(int *action)
+enum spacemouse_action spacemouse_monitor(struct spacemouse **mouse_ptr)
 {
   static struct spacemouse *cache_mouse = NULL;
-  struct spacemouse *ret_mouse = NULL;
   struct udev_device *dev, *dev_parent;
   char const *devnode, *action_str, *attr_man, *attr_pro;
 
-  *action = -1;
+  int action = -1;
 
   if (!udev_monitor)
-    return NULL;
+    return -EBADF;
 
   dev = udev_monitor_receive_device(udev_monitor);
   if (dev) {
-    *action = SPACEMOUSE_ACTION_IGNORE;
+    action = SPACEMOUSE_ACTION_IGNORE;
 
     devnode = udev_device_get_devnode(dev);
 
@@ -212,9 +220,12 @@ struct spacemouse *spacemouse_monitor(int *action)
       if (strcmp(action_str, "add") == 0 &&
           mouse == NULL && attr_pro != NULL &&
           attr_man != NULL && strcmp(attr_man, "3Dconnexion") == 0) {
-        ret_mouse = add_device(devnode, attr_man, attr_pro);
+        *mouse_ptr = add_device(devnode, attr_man, attr_pro);
 
-        *action = SPACEMOUSE_ACTION_ADD;
+        if (*mouse_ptr == NULL)
+          action = -errno;
+        else
+          action = SPACEMOUSE_ACTION_ADD;
       } else if (strcmp(action_str, "remove") == 0 && mouse != NULL) {
         if (cache_mouse != NULL) {
           if (cache_mouse->fd > -1) close(cache_mouse->fd);
@@ -226,9 +237,9 @@ struct spacemouse *spacemouse_monitor(int *action)
         cache_mouse = mouse;
         cache_mouse->next = NULL;
 
-        ret_mouse = cache_mouse;
+        *mouse_ptr = cache_mouse;
 
-        *action = SPACEMOUSE_ACTION_REMOVE;
+        action = SPACEMOUSE_ACTION_REMOVE;
       }
     }
 
@@ -236,7 +247,7 @@ struct spacemouse *spacemouse_monitor(int *action)
     udev_device_unref(dev);
   }
 
-  return ret_mouse;
+  return action;
 }
 
 int spacemouse_monitor_close(void)
