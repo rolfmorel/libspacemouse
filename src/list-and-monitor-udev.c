@@ -222,10 +222,7 @@ enum spacemouse_action spacemouse_monitor(struct spacemouse **mouse_ptr)
           attr_man != NULL && strcmp(attr_man, "3Dconnexion") == 0) {
         *mouse_ptr = add_device(devnode, attr_man, attr_pro);
 
-        if (*mouse_ptr == NULL)
-          action = -errno;
-        else
-          action = SPACEMOUSE_ACTION_ADD;
+        action = (*mouse_ptr) == NULL ? -errno : SPACEMOUSE_ACTION_ADD;
       } else if (strcmp(action_str, "remove") == 0 && mouse != NULL) {
         if (cache_mouse != NULL) {
           if (cache_mouse->fd > -1) close(cache_mouse->fd);
