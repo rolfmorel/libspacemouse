@@ -21,4 +21,4 @@ Dependencies
 
 * libudev
     * udev deamon, `udevd`, to actually generate the connect/disconnect events
-* Linux kernel's `evdev` module. This module is ditributed with all major distributions.
+* Linux kernel's `evdev` module. This module is distributed with all major distributions.
