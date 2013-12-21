@@ -1,6 +1,6 @@
-CC = gcc
-CFLAGS = -std=c89 -pedantic -Wall -g -I../. -I/usr/local/include
-LDFLAGS = -L../. -L/usr/local/lib -lspacemouse -ludev
+CC ?= gcc
+override CFLAGS += -std=c89 -pedantic -Wall -g -I../. -I/usr/local/include
+override LDFLAGS += -L../. -L/usr/local/lib -lspacemouse -ludev
 # only needs -ludev when library (libspacemouse) is not installed on
 # the system (e.g. /usr/lib or /usr/local/lib)
 
