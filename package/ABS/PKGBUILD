@@ -2,7 +2,7 @@
 pkgname="libspacemouse-git"
 pkgver=0.0.0
 pkgrel=1
-pkgdesc="A free software driver for 3D/6DoF input devices"
+pkgdesc="A free software driver library for 3D/6DoF input devices"
 arch=('i686' 'x86_64' 'armv6h')
 url="https://github.com/polyphemus/libspacemouse"
 license=('GPL3')
@@ -21,12 +21,12 @@ pkgver() {
 build() {
   cd "$srcdir/libspacemouse"
 
-  ./configure --prefix=/usr --enable-opt --disable-debug
   make
 }
 
 package() {
   cd "$srcdir/libspacemouse"
-  make DESTDIR="$pkgdir" install
+
+  make DESTDIR="$pkgdir" PREFIX="/usr" install
 }
 
