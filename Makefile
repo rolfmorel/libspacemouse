@@ -1,3 +1,5 @@
+include VERSION.mk
+
 PREFIX ?= /usr/local
 LIBDIR ?= lib
 INCLUDEDIR ?= include
@@ -5,8 +7,8 @@ INCLUDEDIR ?= include
 lib_hdr = libspacemouse.h
 lib_a = libspacemouse.a
 lib_so_link_link = libspacemouse.so
-lib_so_link = $(lib_so_link_link).0
-lib_so = $(lib_so_link).1
+lib_so_link = $(lib_so_link_link).$(VER_MAJOR)
+lib_so = $(lib_so_link).$(VER_MINOR)
 
 all: src
 

@@ -1,8 +1,10 @@
+include ../VERSION.mk
+
 header = types.h
 obj = opaque.o list-and-monitor-udev.o device-evdev.o
 lib_a = libspacemouse.a
-soname = libspacemouse.so.0
-lib_so = $(soname).1
+soname = libspacemouse.so.$(VER_MAJOR)
+lib_so = $(soname).$(VER_MINOR)
 
 CC ?= gcc
 AR ?= ar
