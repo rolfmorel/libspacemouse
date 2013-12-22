@@ -20,7 +20,6 @@ $(lib_so): $(obj)
 	$(CC) -shared -Wl,-soname,$(soname) -o $@ $(obj) $(LDFLAGS) -L. -ludev
 
 %.o: %.c
-	echo $(CC)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: clean
