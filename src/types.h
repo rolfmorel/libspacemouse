@@ -33,6 +33,8 @@ struct spacemouse {
   int id;
   int fd;
 
+  void *data;
+
   char *devnode;
 
   char *manufacturer;

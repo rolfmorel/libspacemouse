@@ -44,3 +44,11 @@ char const * const spacemouse_device_get_manufacturer(
 char const * const spacemouse_device_get_product(struct spacemouse *mouse) {
   return mouse->product;
 }
+
+void spacemouse_device_set_data(struct spacemouse *mouse, void *data) {
+  mouse->data = data;
+}
+
+void *spacemouse_device_get_data(struct spacemouse *mouse) {
+  return mouse->data;
+}

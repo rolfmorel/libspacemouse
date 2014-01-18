@@ -315,6 +315,12 @@ spacemouse_device_set_led(struct spacemouse *mouse, int state);
 int
 spacemouse_device_close(struct spacemouse *mouse);
 
+void
+spacemouse_device_set_data(struct spacemouse *mouse, void *data);
+
+void *
+spacemouse_device_get_data(struct spacemouse *mouse);
+
 #ifdef __cplusplus
 }
 #endif
