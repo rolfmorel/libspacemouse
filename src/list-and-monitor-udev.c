@@ -57,6 +57,7 @@ static struct spacemouse *add_device(char const *devnode,
 
   mouse->id = new_device_id++;
   mouse->fd = -1;
+  mouse->data = NULL;
 
   if ((mouse->devnode = malloc(strlen(devnode) + 1)) == NULL) {
     free(mouse); return NULL;
