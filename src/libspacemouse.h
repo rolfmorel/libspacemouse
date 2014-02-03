@@ -315,9 +315,26 @@ spacemouse_device_set_led(struct spacemouse *mouse, int state);
 int
 spacemouse_device_close(struct spacemouse *mouse);
 
+/**
+ * Associate a pointer to data with a device.
+ *
+ * @param mouse The device with which the data is to be associated.
+ * @param data The pointer to be set for later retrieval.
+ *
+ * @note Data pointers are not "freed" on device removal. In case of a pointer
+ * to (unique) heap memory the pointer needs to manually freed by using the
+ * monitor functionaillty.
+ */
 void
 spacemouse_device_set_data(struct spacemouse *mouse, void *data);
 
+/**
+ * Retrieve a previously asscociated data pointer.
+ *
+ * @param mouse The device of which the associated data is to be returned.
+ *
+ * @return The pointer previously associated or when no data has been set NULL.
+ */
 void *
 spacemouse_device_get_data(struct spacemouse *mouse);
 
